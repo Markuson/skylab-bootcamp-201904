@@ -1,4 +1,4 @@
- /*
+/*
     falta:
         imagen de perfil tiene posicion 
         absoluta y al redimensionar pierde 
@@ -14,10 +14,10 @@
         responsivamente. (js?¿)
 
         
- */
+*/
  
  
- *{
+*{
     font-family: 'Roboto', sans-serif;
     margin: 0;
     border: 0;
@@ -32,34 +32,11 @@ button{
     background-color: transparent;
 }
 
-.title-main-header{
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-}
-
-#header-logo{
-    color: red;
-    font-size: 22px;
-    padding: 8px;
-}
-
-.header-channel-name{
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.search-btn, .config-btn{
-    padding: 20px;
-    font-size: 18px;
-    color: gray;
-}
-
-.top-header{
+.main-header{
     height: 20%;
 }
 
-.main-header-mobile{
+.main-header__mbl{
     box-sizing: border-box;
     width: 100%;
     height: 48px;
@@ -70,32 +47,55 @@ button{
     vertical-align: middle;
 }
 
-.yt-header-logo{
-    height: 16px;
-    width: 70px;
+.main-header__mbl-title{
+    display: flex;
+    flex-flow: row;
+    align-items: center;
 }
 
-.menu-btn-dsktp{
-    padding: 0 24px;
-    color: slategray;
+.main-header__mbl-channel-name{
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.main-header__mbl-search-btn, .main-header__mbl-config-btn{
+    padding: 20px;
     font-size: 18px;
+    color: gray;
 }
 
-.main-header-dsktp{
+#header-logo{
+    color: red;
+    font-size: 22px;
+    padding: 8px;
+}
+
+.main-header__dsktp{
     height: 50px;
     align-items: center;
     border-bottom: 1px solid white;
     box-shadow: 1px 1px 1px lightgray;
 }
 
-.search-input-dsktp{
+.main-header__dsktp-menu-btn{
+    padding: 0 24px;
+    color: slategray;
+    font-size: 18px;
+}
+
+.main-header__dsktp-yt-logo{
+    height: 16px;
+    width: 70px;
+}
+
+.main-header__dsktp-search-input{
     border: 1px solid lightgray;
     height: 24px;
     width: 360px;
     margin: 0 0 0 76px;
 }
 
-.search-btn-dsktp{
+.main-header__dsktp-search-btn{
     border: 1px solid lightgray;
     color: gray;
     background-color: whitesmoke;
@@ -110,13 +110,35 @@ button{
     flex-flow: column;
 }
 
-.channel-img{
+.channel-header__channel-img{
     width: 100%;
     height: 45%;
 }
 
-.profile-img{
+.channel-header__profile-img{
     padding: 0 50px;
+}
+
+.channel-header__text{
+    padding: 32px 40px 0;;
+}
+
+.channel-header__text-name{
+    font-weight: 100;
+    font-size: 18px;
+    padding: 0 5px;
+}
+
+.channel-header__text-subscribe{
+    font-weight: 400;
+    padding: 5px;
+    color: lightslategray;
+}
+
+.channel-header__subscribe-btn{
+    display: flex;
+    flex-flow: row;
+    align-items: center;
 }
 
 #subscribe-logo{
@@ -124,50 +146,28 @@ button{
     font-size: 22px;
 }
 
-#subscribe-text{
-    font-weight: 400;
-    padding: 5px;
-    color: lightslategray;
-}
-
-nav{
+.nav-menu{
     display: flex;
     justify-content: space-between;
     box-shadow: 0px 2px 2px lightgray;
     height: 56px;
 }
 
-.videos-btn{
+.nav-menu__videos-btn{
     width: 20%;
 }
 
-.playlist-btn{
+.nav-menu__playlist-btn{
     width: 45%;
 }
 
-.more-btn{
+.nav-menu__more-btn{
     width: 15%;
 }
 
-.main-btn{
+.nav-menu__main-btn{
     border-bottom: 2px solid red;
     width: 20%;
-}
-
-.channel-header-text{
-    padding: 32px 40px 0;;
-}
-
-.subscribe-btn{
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-}
-
-#channel-header-name{
-    font-weight: 100;
-    font-size: 18px;
-    padding: 0 5px;
 }
 
 .video-playlist{
@@ -177,12 +177,12 @@ nav{
     border-bottom: 1px solid lightgrey;
 }
 
-.more-videos{
-    font-size: 18px;
-    padding: 10px 10px 20px 10px;
+.video-playlist__title{
+    padding: 15px 10px 10px 10px;
+    font-size: 14px;
 }
 
-article{
+.video-playlist__article{
     display: grid;
     grid-template: 3fr 1fr 1fr / 160px 1fr 40px ;
     grid-column-gap: 5px;
@@ -191,59 +191,59 @@ article{
     
 }
 
-.section-title{
-    padding: 15px 10px 10px 10px;
-    font-size: 14px;
-}
-
-.video-img{
+.video-playlist__video-img{
     grid-row: 1 / span 4;
     grid-column: 1;
     width:160px; 
     height: 90px;
 }
 
-.video-title{
+.video-playlist__video-title{
     grid-row: 1;
     grid-column: 2;
     font-size: 14px;
 }
 
-.video-owner{
+.video-playlist__video-owner{
     grid-row: 2 / span 1;
     grid-column: 2;
     font-size: 12px;
     color: gray;
 }
 
-.video-visualisations{
+.video-playlist__video-visualisations{
     grid-row: 3 / span 1 ;
     grid-column: 2 / span 1;
     font-size: 12px;
     color: gray;
 }
-.video-options{
+
+.video-playlist__video-options{
     font-size: 16px;
     padding: 8px 16px;
     text-align: left;
     vertical-align: top;
 }
 
+.video-playlist__more-videos{
+    font-size: 18px;
+    padding: 10px 10px 20px 10px;
+}
 
 @media (min-width: 768px){
-    .main-header-mobile{
+    .main-header__mbl{
         display: none;
     }
-    .main-header-dsktp{
+    .main-header__dsktp{
         display: flex;
     }
-    .profile-img{
+    .channel-header__profile-img{
         width: 75px;
         height: 75px;
         margin: 15px 44px;
         
     }
-    .low-header{
+    .channel-header__low-header{
         display: flex;
         flex-flow: row;
         margin: 0;
@@ -251,24 +251,24 @@ article{
     .video-playlist{
         flex-flow: row;
     }
-    .video-options{
+    .video-playlist__video-options{
         display: none;
     }
 }
 
 @media (max-width: 768px){
 
-    .main-header-mobile{
+    .main-header__mbl{
         display: flex;
     }
-    .main-header-dsktp{
+    .main-header__dsktp{
         display: none;
     }
-    .profile-img{
+    .channel-header__profile-img{
         width: 54px;
         margin: -100px -30px -25px;
     }
-    .low-header{
+    .channel-header__low-header{
         margin: -15px 0;
     }
     

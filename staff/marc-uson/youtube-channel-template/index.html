@@ -11,48 +11,49 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="top-header">
+    <header class="main-header">
         
-        <section class="main-header-mobile">
-            <div class="title-main-header">
-                <button class="home-button">
+        <section class="main-header__mbl">
+            <div class="main-header__mbl-title">
+                <button class="main-header__mbl-home-button">
                     <i class="fab fa-youtube" id="header-logo"></i>
                 </button>
-                <p class="header-channel-name">World Surf League</p>
+                <p class="main-header__mbl-channel-name">World Surf League</p>
             </div>
-            <aside class="aside-main-header">
-                <button class="search-btn" >
+            <aside class="main-header__mbl-aside">
+                <button class="main-header__mbl-search-btn" >
                     <i class="fas fa-search"></i>
                 </button>
-                <button class="config-btn">
+                <button class="main-header__mbl-config-btn">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </aside>
                 
         </section>
 
-        <section class="main-header-dsktp">
-            <button class="menu-btn-dsktp">
+        <section class="main-header__dsktp">
+            <button class="main-header__dsktp-menu-btn">
                 <i class="fas fa-bars" class="menu-logo-dktp"></i>
             </button>
-            <button class="home-btn-dsktp">
-                <img class="yt-header-logo" src="images/yt_logo_rgb_light.png" alt="">
+            <button class="main-header__dsktp-home-btn">
+                <img class="main-header__dsktp-yt-logo" src="images/yt_logo_rgb_light.png" alt="">
             </button>
-            <input type="text" class="search-input-dsktp">
-            <button class="search-btn-dsktp">
+            <input type="text" class="main-header__dsktp-search-input">
+            <button class="main-header__dsktp-search-btn">
                 <i class="fas fa-search"></i>
             </button>
         </section>
 
         <section class="channel-header">
-            <img class="channel-img" src="images/wsl_banner.jpg" alt="channel-img">
-            <div class="low-header">
-                <img class="profile-img" src="images/wsl-profile.png" alt="profile-img">
-                <section class="channel-header-text">
-                    <p id="channel-header-name">World Surf League</p>
-                    <button class="subscribe-btn">
+            <img class="channel-header__channel-img" src="images/wsl_banner.jpg" alt="channel-img">
+            <div class="channel-header__low-header">
+                <img class="channel-header__profile-img" src="images/wsl-profile.png" alt="profile-img">
+                <!-- HASTA AQUI -->
+                <section class="channel-header__text">
+                    <p class="channel-header__text-name">World Surf League</p>
+                    <button class="channel-header__subscribe-btn">
                         <i class="fab fa-youtube" id="subscribe-logo"></i>
-                        <p id="subscribe-text">SUBSCRIT</p>
+                        <p class="channel-header__text-subscribe">SUBSCRIT</p>
                     </button>
                 </section>
             </div>
@@ -60,184 +61,62 @@
         </section>
     </header>
 
-    <nav>
-        <button class="main-btn">
+    <nav class="nav-menu">
+        <button class="nav-menu__main-btn">
             <p>INICI</p>
         </button>
-        <button class="videos-btn">
+        <button class="nav-menu__videos-btn">
             <p>VÍDEOS</p>
         </button>
-        <button class="playlist-btn">
+        <button class="nav-menu__playlist-btn">
             <p>LLISTES DE REPRODUCCIÓ</p>
         </button>
-        <button class="more-btn">
+        <button class="nav-menu__more-btn">
             <i class="fas fa-chevron-down"></i>
         </button>
     </nav>
 
-    <main>
+    <main class="main-section">
         <section class="video-playlist">
-            <p class="section-title"> 2019 Quick Silver Pro Gold Coast</p>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
+            <p class="video-playlist__title"> 2019 Quick Silver Pro Gold Coast</p>
+            <article class="video-playlist__article">
+                <img class="video-playlist__video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
+                <p class="video-playlist__video-title">
                     Wright vs. Colapinto vs. Bailey - Round One, Heat 1...
                 </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
+                <p class="video-playlist__video-owner">World Surf League</p>
+                <p class="video-playlist__video-visualisations">453m visualitzacions</p>
+                <button class="video-playlist__video-options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
+            <article class="video-playlist__article">
+                <img class="video-playlist__video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
+                <p class="video-playlist__video-title">
                     Wright vs. Colapinto vs. Bailey - Round One, Heat 1...
                 </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
+                <p class="video-playlist__video-owner">World Surf League</p>
+                <p class="video-playlist__video-visualisations">453m visualitzacions</p>
+                <button class="video-playlist__video-options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
+            <article class="video-playlist__article">
+                <img class="video-playlist__video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
+                <p class="video-playlist__video-title">
                     Wright vs. Colapinto vs. Bailey - Round One, Heat 1...
                 </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
+                <p class="video-playlist__video-owner">World Surf League</p>
+                <p class="video-playlist__video-visualisations">453m visualitzacions</p>
+                <button class="video-playlist__video-options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </article>
-            <button class="more-videos">
+            <button class="video-playlist__more-videos">
                 <i class="fas fa-chevron-down"></i>
             </button>
             
         </section>
-        <section class="video-playlist">
-            <p class="section-title"> 2019 Quick Silver Pro Gold Coast</p>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1 - Quiqusilver Pro Gold Coast...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1 - Quiqusilver Pro Gold Coast...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1 - Quiqusilver Pro Gold Coast...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <button class="more-videos">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            
-        </section>
-        <section class="video-playlist">
-            <p class="section-title"> 2019 Quick Silver Pro Gold Coast</p>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1 - Quiqusilver Pro Gold Coast...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1 - Quiqusilver Pro Gold Coast...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1 - Quiqusilver Pro Gold Coast...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <button class="more-videos">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            
-        </section>
-        <section class="video-playlist">
-            <p class="section-title"> 2019 Quick Silver Pro Gold Coast</p>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <article>
-                <img class="video-img" src="https://i.ytimg.com/vi/1NSa-GXvTfQ/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLA5YJSFclrZly-7yFjiuPKbjsO8qg" alt="video-img">
-                <p class="video-title">
-                    Wright vs. Colapinto vs. Bailey - Round One, Heat 1...
-                </p>
-                <p class="video-owner">World Surf League</p>
-                <p class="video-visualisations">453m visualitzacions</p>
-                <button class="video-options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-            </article>
-            <button class="more-videos">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            
-        </section>
-
-    
     </main>
 </body>
 </html>
