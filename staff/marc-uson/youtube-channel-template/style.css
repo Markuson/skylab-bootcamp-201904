@@ -248,6 +248,12 @@ article{
         flex-flow: row;
         margin: 0;
     }
+    .video-playlist{
+        flex-flow: row;
+    }
+    .video-options{
+        display: none;
+    }
 }
 
 @media (max-width: 768px){
@@ -265,4 +271,5 @@ article{
     .low-header{
         margin: -15px 0;
     }
+    
 }
