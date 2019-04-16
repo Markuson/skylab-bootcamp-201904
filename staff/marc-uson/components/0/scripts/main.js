@@ -17,7 +17,18 @@ var signUp = new SignUp(forms[0], function(name, surname, email, password) {
     signUpOk.visible = true;
 }, i18n.signUp, defaultLanguage);
 
-var signIn = new SignIn(forms[1], logic.login, i18n.signIn, defaultLanguage);
+// var signIn = new SignIn(forms[1], logic.login, i18n.signIn, defaultLanguage);
+// signIn.visible = false;
+
+var signIn = new SignIn(forms[1], function(email,password){
+
+     var loged = logic.login(email, password);
+
+     console.log(loged);
+     signIn.visible = false;
+     home.visible = true;
+
+}, i18n.signIn, defaultLanguage);
 signIn.visible = false;
 
 var sections = document.getElementsByTagName('section');
@@ -27,6 +38,10 @@ var signUpOk = new SignUpOk(sections[0], function() {
     signIn.visible = true;
 });
 signUpOk.visible = false;
+
+var main = document.getElementsByTagName('main');
+var home = new Home(main[0])
+home.visible = false;
 
 
 

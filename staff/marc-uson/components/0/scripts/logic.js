@@ -15,7 +15,7 @@ var logic = {
         });
     },
 
-    login: function (email, password) {
+    login: function (email, password, onNavigateToHome) {
         // TODO validate input data
 
         var user = users.find(function(user) { return user.email === email });
@@ -25,6 +25,8 @@ var logic = {
         if (user.password === password) {
             this.__userEmail__ = email;
             this.__accessTime__ = Date.now();
+            console.log('onNavigateToHome();')
+            return {email: email, password: password, date: Date.now()};
         } // TODO else throw error 'wrong credentials'
     }
 }
