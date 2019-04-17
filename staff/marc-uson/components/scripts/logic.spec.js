@@ -259,7 +259,52 @@ describe('logic', function () {
             expect(_error).toBeDefined();
             expect(_error.code).toBe(1);
         });
+    });
 
-        // TODO fail cases
+    describe('search ducks', function() {
+        it('should succeed on correct query', function(done) {
+            logic.searchDucks('yellow', function(ducks) {
+                expect(ducks).toBeDefined();
+                expect(ducks instanceof Array).toBeTruthy();
+                expect(ducks.length).toBe(13);
+
+                done();
+            });
+        });
+        it('should fail on undefined query', function(done){
+            expect(function () {
+                logic.searchDucks(undefined, function(){});
+            }).toThrowError(Error, 'undefined is not a valid query')
+            done();
+        });
+        it('should fail on undefined function', function(done){
+            expect(function () {
+                logic.searchDucks('yellow');
+            }).toThrowError(Error, 'undefined is not a function')
+            done();
+        });
+    });
+
+    describe('retrieve ducks', function() {
+        it('should succeed on correct id', function(done) {
+            logic.retrieveDucklingDetail('5c3853aebd1bde8520e66e11', function(duck) {
+                expect(duck).toBeDefined();
+                expect(duck instanceof Object).toBeTruthy();
+
+                done();
+            });
+        });
+        it('should fail on undefined id', function(done){
+            expect(function () {
+                logic.retrieveDucklingDetail(undefined, function(){});
+            }).toThrowError(Error, 'undefined is not a valid query')
+            done();
+        });
+        it('should fail on undefined function', function(done){
+            expect(function () {
+                logic.retrieveDucklingDetail('5c3853aebd1bde8520e66e11');
+            }).toThrowError(Error, 'undefined is not a function')
+            done();
+        });
     });
 });

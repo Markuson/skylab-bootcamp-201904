@@ -34,7 +34,6 @@ var logic = {
             error.code = 6;
             throw error;
         }
-        // TODO verify user does not exists already, otherwise error 'user already exists'
 
         users.push({
             name: name,
@@ -67,5 +66,35 @@ var logic = {
 
             throw error;
         };
+    },
+
+    searchDucks: function (query, callback) {
+        if(query === undefined) throw new Error(query + ' is not a valid query');
+        if ((callback === undefined) ||(typeof callback !== 'function')) throw new Error(callback + ' is not a function');
+
+        var xhr = new XMLHttpRequest;
+
+        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/search?q=' + query);
+
+        xhr.addEventListener('load', function () {
+            callback(JSON.parse(this.responseText));
+        });
+
+        xhr.send();
+    },
+
+    retrieveDucklingDetail: function(id, callback) {
+        if(id === undefined) throw new Error(id + ' is not a valid query');
+        if ((callback === undefined) || (typeof callback !== 'function')) throw new Error(callback + ' is not a function');
+
+        var xhr = new XMLHttpRequest;
+
+        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/ducks/' + id);
+
+        xhr.addEventListener('load', function () {
+            callback(JSON.parse(this.responseText));
+        });
+
+        xhr.send();
     }
 }
