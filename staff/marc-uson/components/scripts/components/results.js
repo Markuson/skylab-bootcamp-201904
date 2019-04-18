@@ -2,7 +2,7 @@
 
 function Results(ul, onSelect) {
     Component.call(this, ul);
-    this.onSelect = onSelect;
+    this.__onSelect__ = onSelect;
 
 }
 
@@ -31,7 +31,7 @@ Object.defineProperty(Results.prototype, 'items', {
 
             li.addEventListener('click', function(event){
                 this.visible = false;
-                this.onSelect(item.id);
+                this.__onSelect__(item.id);
                 // console.log('cosa', item.id, this);
             }.bind(this));
 

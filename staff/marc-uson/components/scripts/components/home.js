@@ -9,11 +9,12 @@ function Home(container, onLogOutClick, onSearch, onSelect) {
     var ul = this.container.children[2];
     var results = new Results(ul, onSelect);
     this.__results__ = results;
+    results.visible = false;
 
     var section = this.container.children[3];
     var selectedItem = new SelectedItem(section);
-    selectedItem.visible = false;
     this.__selectedItem__ = selectedItem;
+    selectedItem.visible = false;
 
     var link = this.container.children[4];
 
@@ -29,16 +30,16 @@ Home.prototype.constructor = Home;
 
 Object.defineProperty(Home.prototype, 'results', {
     set: function(results) {
+        this.__selectedItem__.visible = false;
         this.__results__.items = results;
         this.__results__.visible = true;
-        this.__selectedItem__.visible = false;
     }
 });
 
 Object.defineProperty(Home.prototype, 'selectedItem', {
     set: function(results) {
+        this.__results__.visible = false;
         this.__selectedItem__.items = results;
         this.__selectedItem__.visible = true;
-        this.__results__.visible = false;
     }
 });
