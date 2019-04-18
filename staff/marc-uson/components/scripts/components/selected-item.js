@@ -1,0 +1,33 @@
+'use strict';
+
+function SelectedItem(section, onSelect){
+    Component.call(this, section);
+
+}
+
+SelectedItem.prototype = Object.create(Component.prototype);
+SelectedItem.prototype.constructor = SelectedItem;
+
+Object.defineProperty(SelectedItem.prototype, 'items', {
+    set: function(items) {
+        while (this.container.firstElementChild) this.container.removeChild(this.container.firstElementChild);
+            var h3 = document.createElement('h3');
+            h3.innerText = items.title;
+
+            var img = document.createElement('img');
+            img.src = items.image;
+
+            var p = document.createElement('p');
+            p.innerText = items.description;
+
+            var span = document.createElement('span');
+            span.innerText = items.price;
+
+            this.container.appendChild(h3);
+            this.container.appendChild(img);
+            this.container.appendChild(p);
+            this.container.appendChild(span);
+
+            this.visible = true;
+    }
+});
