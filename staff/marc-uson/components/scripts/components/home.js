@@ -2,7 +2,7 @@ class Home extends Component{
     constructor(container, onLogOutClick, onSearch, onSelect) {
         super(container)
 
-        const form = this.container.children[1]
+        let form = this.container.children[1]
         form = new Search(form, onSearch)
 
         const ul = this.container.children[2]
