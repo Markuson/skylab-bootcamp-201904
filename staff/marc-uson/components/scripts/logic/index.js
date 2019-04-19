@@ -1,8 +1,7 @@
+'use strict'
 
-
-let logic = {
+const logic = {
     register: function (name, surname, email, password) {
-
         if ((typeof name !== 'string') || (name === undefined) || (name == '')){
             let error = Error('not a valid name')
             error.code = 2
@@ -46,10 +45,10 @@ let logic = {
     login: function (email, password) {
         // TODO validate input data
 
-        const user = users.find(function(user) { return user.email === email })
+        const user = users.find(user => user.email === email)
 
         if (!user) {
-            let error = Error('wrong credentials')
+            const error = Error('wrong credentials')
 
             error.code = 1
 
@@ -60,7 +59,7 @@ let logic = {
             this.__userEmail__ = email
             this.__accessTime__ = Date.now()
         } else {
-            let error = Error('wrong credentials')
+            const error = Error('wrong credentials')
 
             error.code = 1
 
@@ -68,33 +67,40 @@ let logic = {
         }
     },
 
+    retrieveUser: function () {
+        // TODO validate input
+
+        const user = users.find(user => user.email === this.__userEmail__)
+
+        if (!user) {
+            const error = Error('user not found with email ' + email)
+
+            error.code = 2
+
+            throw error
+        }
+
+        return {
+            name: user.name,
+            surname: user.surname,
+            email: user.email
+        }
+    },
+
+
     searchDucks: function (query, callback) {
         if(query === undefined) throw new Error(query + ' is not a valid query')
         if ((callback === undefined) ||(typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
-        const xhr = new XMLHttpRequest
-
-        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/search?q=' + query)
-
-        xhr.addEventListener('load', function () {
-            callback(JSON.parse(this.responseText))
-        })
-
-        xhr.send()
+        // TODO handle api errors
+        duckApi.searchDucks(query, callback)
     },
 
-    retrieveDucklingDetail: function(id, callback) {
+    retrieveDuck: function (id, callback) {
         if(id === undefined) throw new Error(id + ' is not a valid query')
         if ((callback === undefined) || (typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
-        const xhr = new XMLHttpRequest
-
-        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/ducks/' + id)
-
-        xhr.addEventListener('load', function () {
-            callback(JSON.parse(this.responseText))
-        })
-
-        xhr.send()
+        // TODO handle api errors
+        duckApi.retrieveDuck(id, callback)
     }
 }
