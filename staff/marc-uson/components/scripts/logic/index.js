@@ -1,7 +1,7 @@
 'use strict'
 
 const logic = {
-    register: function (name, surname, email, password) {
+    registerUser(name, surname, email, password) {
         if ((typeof name !== 'string') || (name === undefined) || (name == '')){
             let error = Error('not a valid name')
             error.code = 2
@@ -42,7 +42,7 @@ const logic = {
         })
     },
 
-    login: function (email, password) {
+    loginUser(email, password) {
         // TODO validate input data
 
         const user = users.find(user => user.email === email)
@@ -67,7 +67,7 @@ const logic = {
         }
     },
 
-    retrieveUser: function () {
+    retrieveUser() {
         // TODO validate input
 
         const user = users.find(user => user.email === this.__userEmail__)
@@ -87,8 +87,7 @@ const logic = {
         }
     },
 
-
-    searchDucks: function (query, callback) {
+    searchDucks(query, callback) {
         if(query === undefined) throw new Error(query + ' is not a valid query')
         if ((callback === undefined) ||(typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
@@ -96,7 +95,7 @@ const logic = {
         duckApi.searchDucks(query, callback)
     },
 
-    retrieveDuck: function (id, callback) {
+    retrieveDuck(id, callback) {
         if(id === undefined) throw new Error(id + ' is not a valid query')
         if ((callback === undefined) || (typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
