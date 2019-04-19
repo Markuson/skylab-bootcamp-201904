@@ -1,38 +1,38 @@
-'use strict';
 
-var logic = {
+
+let logic = {
     register: function (name, surname, email, password) {
 
         if ((typeof name !== 'string') || (name === undefined) || (name == '')){
-            var error = Error('not a valid name');
-            error.code = 2;
-            throw error;
-        };
+            let error = Error('not a valid name')
+            error.code = 2
+            throw error
+        }
 
         if ((typeof surname !== 'string') || (surname === undefined) || (surname == '')){
-            var error = Error('not a valid surname');
-            error.code = 3;
-            throw error;
-        };
+            let error = Error('not a valid surname')
+            error.code = 3
+            throw error
+        }
 
         if ((typeof email !== 'string') || (email === undefined) || (email == '')){
-            var error = Error('not a valid email');
-            error.code = 4;
-            throw error;
-        };
+            let error = Error('not a valid email')
+            error.code = 4
+            throw error
+        }
 
         if ((password === undefined) || (password == '')){
-            var error = Error('not a valid password');
-            error.code = 5;
-            throw error;
-        };
+            let error = Error('not a valid password')
+            error.code = 5
+            throw error
+        }
 
-        var exists = users.some(function(user) { return user.email === email});
+        let exists = users.some(function(user) { return user.email === email})
 
         if (exists){
-            var error = Error('User already exists!');
-            error.code = 6;
-            throw error;
+            let error = Error('User already exists!')
+            error.code = 6
+            throw error
         }
 
         users.push({
@@ -40,61 +40,61 @@ var logic = {
             surname: surname,
             email: email,
             password: password
-        });
+        })
     },
 
     login: function (email, password) {
         // TODO validate input data
 
-        var user = users.find(function(user) { return user.email === email });
+        let user = users.find(function(user) { return user.email === email })
 
         if (!user) {
-            var error = Error('wrong credentials');
+            let error = Error('wrong credentials')
 
-            error.code = 1;
+            error.code = 1
 
-            throw error;
-        };
+            throw error
+        }
 
         if (user.password === password) {
-            this.__userEmail__ = email;
-            this.__accessTime__ = Date.now();
+            this.__userEmail__ = email
+            this.__accessTime__ = Date.now()
         } else {
-            var error = Error('wrong credentials')
+            let error = Error('wrong credentials')
 
-            error.code = 1;
+            error.code = 1
 
-            throw error;
-        };
+            throw error
+        }
     },
 
     searchDucks: function (query, callback) {
-        if(query === undefined) throw new Error(query + ' is not a valid query');
-        if ((callback === undefined) ||(typeof callback !== 'function')) throw new Error(callback + ' is not a function');
+        if(query === undefined) throw new Error(query + ' is not a valid query')
+        if ((callback === undefined) ||(typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
-        var xhr = new XMLHttpRequest;
+        let xhr = new XMLHttpRequest
 
-        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/search?q=' + query);
+        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/search?q=' + query)
 
         xhr.addEventListener('load', function () {
-            callback(JSON.parse(this.responseText));
-        });
+            callback(JSON.parse(this.responseText))
+        })
 
-        xhr.send();
+        xhr.send()
     },
 
     retrieveDucklingDetail: function(id, callback) {
-        if(id === undefined) throw new Error(id + ' is not a valid query');
-        if ((callback === undefined) || (typeof callback !== 'function')) throw new Error(callback + ' is not a function');
+        if(id === undefined) throw new Error(id + ' is not a valid query')
+        if ((callback === undefined) || (typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
-        var xhr = new XMLHttpRequest;
+        let xhr = new XMLHttpRequest
 
-        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/ducks/' + id);
+        xhr.open('GET', 'https://duckling-api.herokuapp.com/api/ducks/' + id)
 
         xhr.addEventListener('load', function () {
-            callback(JSON.parse(this.responseText));
-        });
+            callback(JSON.parse(this.responseText))
+        })
 
-        xhr.send();
+        xhr.send()
     }
 }

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Register form.
  *
@@ -9,66 +7,59 @@
  * @param {*} defaultLanguage
  * @param {*} onLanguageChange The callback invoked on language change.
  */
-function Register(form, onRegister, literals, defaultLanguage, onLanguageChange, onNavigateToLogin) {
-    Component.call(this, form);
 
-    this.__literals__ = literals;
-    this.__onLanguageChange__ = onLanguageChange;
+class Register extends Component{
+    constructor(form, onRegister, literals, defaultLanguage, onLanguageChange, onNavigateToLogin) {
+        super(form)
 
-    var feedback = new Feedback(this.container.children[5]);
-    feedback.visible = false;
-    this.__feedback__ = feedback;
+    this.__literals__ = literals
+    this.__onLanguageChange__ = onLanguageChange
+    let feedback = new Feedback(this.container.children[5])
+    feedback.visible = false
+    this.__feedback__ = feedback
 
-    var link = this.container.children[4];
+    let link = this.container.children[4]
+
+    this.language = defaultLanguage
+
+    this.onRegister = onRegister
 
     link.addEventListener('click', function(){
-        event.preventDefault();
+        event.preventDefault()
 
         onNavigateToLogin()
-    });
+    })
+    }
 
-    this.language = defaultLanguage;
-
-    this.onRegister = onRegister;
-}
-
-Register.prototype = Object.create(Component.prototype);
-Register.prototype.constructor = Register;
-
-Object.defineProperty(Register.prototype, 'onRegister', {
-    set: function (callback) {
+    set onRegister(callback){
         this.container.addEventListener('submit', function (event) {
-            event.preventDefault();
+            event.preventDefault()
 
-            var name = this.name.value;
-            var surname = this.surname.value;
-            var email = this.email.value;
-            var password = this.password.value;
+            let name = this.name.value
+            let surname = this.surname.value
+            let email = this.email.value
+            let password = this.password.value
 
-            callback(name, surname, email, password);
-        });
+            callback(name, surname, email, password)
+        })
     }
-});
 
-Object.defineProperty(Register.prototype, 'language', {
-    set: function (language) {
-        var literals = this.__literals__[language];
+    set language(language) {
+        let literals = this.__literals__[language]
 
-        this.container.children[0].innerText = literals.title;
-        this.container.name.placeholder = literals.name;
-        this.container.surname.placeholder = literals.surname;
-        this.container.email.placeholder = literals.email;
-        this.container.password.placeholder = literals.password;
+        this.container.children[0].innerText = literals.title
+        this.container.name.placeholder = literals.name
+        this.container.surname.placeholder = literals.surname
+        this.container.email.placeholder = literals.email
+        this.container.password.placeholder = literals.password
 
-        this.container.children[2].innerText = literals.title;
+        this.container.children[2].innerText = literals.title
 
-        if (this.__onLanguageChange__) this.__onLanguageChange__(language);
+        if (this.__onLanguageChange__) this.__onLanguageChange__(language)
     }
-});
 
-Object.defineProperty(Register.prototype, 'error', {
-    set: function(error) {
-        this.__feedback__.message = error;
-        this.__feedback__.visible = true;
+    set error(error){
+        this.__feedback__.message = error
+        this.__feedback__.visible = true
     }
-});
+}

@@ -1,35 +1,33 @@
-'use strict';
 
-function Landing(section, literals, onNavigateToRegister, onNavigateToLogin) {
-    Component.call(this, section);
 
-    this.__literals__ = literals;
+class Landing extends Component{
+    constructor(section, literals, onNavigateToRegister, onNavigateToLogin) {
+        super(section)
 
-    var links = this.container.children;
+        this.__literals__ = literals
 
-    links[0].addEventListener('click', function(event) {
-        event.preventDefault();
+        let links = this.container.children
 
-        onNavigateToRegister();
-    });
+        links[0].addEventListener('click', function(event) {
+            event.preventDefault()
 
-    links[2].addEventListener('click', function(event) {
-        event.preventDefault();
+            onNavigateToRegister()
+        })
 
-        onNavigateToLogin();
-    });
-}
+        links[2].addEventListener('click', function(event) {
+            event.preventDefault()
 
-Landing.prototype = Object.create(Component.prototype);
-Landing.prototype.constructor = Landing;
-
-Object.defineProperty(Landing.prototype, 'language', {
-    set: function (language) {
-        var literals = this.__literals__[language];
-
-        var children = this.container.children;
-        children[0].innerText = literals.register;
-        children[1].innerText = literals.or;
-        children[2].innerText = literals.login;
+            onNavigateToLogin()
+        })
     }
-});
+
+    set language (language) {
+        let literals = this.__literals__[language]
+
+        let children = this.container.children
+        children[0].innerText = literals.register
+        children[1].innerText = literals.or
+        children[2].innerText = literals.login
+    }
+
+}

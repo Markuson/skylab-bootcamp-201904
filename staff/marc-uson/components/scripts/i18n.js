@@ -1,4 +1,4 @@
-var i18n = {
+let i18n = {
     landing: {
         en: {
             register: 'Register',
@@ -113,4 +113,4 @@ var i18n = {
             6: 'o usuario xa existe!'
         }
     }
-};
+}
