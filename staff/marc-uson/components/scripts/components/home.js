@@ -2,20 +2,20 @@ class Home extends Component{
     constructor(container, onLogOutClick, onSearch, onSelect) {
         super(container)
 
-        let form = this.container.children[1]
+        const form = this.container.children[1]
         form = new Search(form, onSearch)
 
-        let ul = this.container.children[2]
-        let results = new Results(ul, onSelect)
+        const ul = this.container.children[2]
+        const results = new Results(ul, onSelect)
         this.__results__ = results
         results.visible = false
 
-        let section = this.container.children[3]
-        let selectedItem = new SelectedItem(section)
+        const section = this.container.children[3]
+        const selectedItem = new SelectedItem(section)
         this.__selectedItem__ = selectedItem
         selectedItem.visible = false
 
-        let link = this.container.children[4]
+        const link = this.container.children[4]
 
         link.addEventListener('click', function(){
             event.preventDefault()

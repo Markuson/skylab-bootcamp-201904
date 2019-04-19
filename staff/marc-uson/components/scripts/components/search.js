@@ -7,7 +7,7 @@ class Search extends Component{
         this.container.addEventListener('submit', function(event) {
             event.preventDefault()
 
-            let query = this.query.value
+            const query = this.query.value
             callback(query)
         })
     }

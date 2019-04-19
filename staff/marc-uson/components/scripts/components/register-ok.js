@@ -4,7 +4,7 @@ class RegisterOk extends Component{
     constructor(section, onNavigateToLogin) {
         super(section)
 
-        let link = this.container.children[0]
+        const link = this.container.children[0]
 
         link.addEventListener('click', function(event) {
             event.preventDefault()

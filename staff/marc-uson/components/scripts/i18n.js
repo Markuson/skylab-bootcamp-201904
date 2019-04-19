@@ -1,4 +1,4 @@
-let i18n = {
+const i18n = {
     landing: {
         en: {
             register: 'Register',

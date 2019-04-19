@@ -14,11 +14,11 @@ class Register extends Component{
 
     this.__literals__ = literals
     this.__onLanguageChange__ = onLanguageChange
-    let feedback = new Feedback(this.container.children[5])
+    const feedback = new Feedback(this.container.children[5])
     feedback.visible = false
     this.__feedback__ = feedback
 
-    let link = this.container.children[4]
+    const link = this.container.children[4]
 
     this.language = defaultLanguage
 
@@ -35,17 +35,17 @@ class Register extends Component{
         this.container.addEventListener('submit', function (event) {
             event.preventDefault()
 
-            let name = this.name.value
-            let surname = this.surname.value
-            let email = this.email.value
-            let password = this.password.value
+            const name = this.name.value
+            const surname = this.surname.value
+            const email = this.email.value
+            const password = this.password.value
 
             callback(name, surname, email, password)
         })
     }
 
     set language(language) {
-        let literals = this.__literals__[language]
+        const literals = this.__literals__[language]
 
         this.container.children[0].innerText = literals.title
         this.container.name.placeholder = literals.name

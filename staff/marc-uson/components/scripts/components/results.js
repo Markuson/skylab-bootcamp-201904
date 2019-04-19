@@ -9,19 +9,19 @@ class Results extends Component{
     set items(items){
         this.container.innerHTML = ''
         items.forEach(item => { // id, title, image, price
-            let li = document.createElement('li')
+            const li = document.createElement('li')
             li.setAttribute('data-id', item.id)
 
-            let h3 = document.createElement('h3')
+            const h3 = document.createElement('h3')
             h3.innerText = item.title
             li.appendChild(h3)
 
-            let img = document.createElement('img')
+            const img = document.createElement('img')
             img.src = item.image
             img.style.width = '200px'
             li.appendChild(img)
 
-            let span = document.createElement('span')
+            const span = document.createElement('span')
             span.innerText = item.price
             li.appendChild(span)
 

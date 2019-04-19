@@ -16,11 +16,11 @@ class Login extends Component{
         this.__literals__ = literals
         this.__onLanguageChange__ = onLanguageChange
 
-        let feedback = new Feedback(this.container.children[5])
+        const feedback = new Feedback(this.container.children[5])
         feedback.visible = false
         this.__feedback__ = feedback
 
-        let link = this.container.children[4]
+        const link = this.container.children[4]
         link.addEventListener('click', function(){
             event.preventDefault()
 
@@ -36,8 +36,8 @@ class Login extends Component{
         this.container.addEventListener('submit', function (event) {
             event.preventDefault()
 
-            let email = this.email.value
-            let password = this.password.value
+            const email = this.email.value
+            const password = this.password.value
 
             callback(email, password)
         })
@@ -45,7 +45,7 @@ class Login extends Component{
 
 
     set language(language) {
-        let literals = this.__literals__[language]
+        const literals = this.__literals__[language]
 
         this.container.children[0].innerText = literals.title
 

@@ -46,7 +46,7 @@ let logic = {
     login: function (email, password) {
         // TODO validate input data
 
-        let user = users.find(function(user) { return user.email === email })
+        const user = users.find(function(user) { return user.email === email })
 
         if (!user) {
             let error = Error('wrong credentials')
@@ -72,7 +72,7 @@ let logic = {
         if(query === undefined) throw new Error(query + ' is not a valid query')
         if ((callback === undefined) ||(typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
-        let xhr = new XMLHttpRequest
+        const xhr = new XMLHttpRequest
 
         xhr.open('GET', 'https://duckling-api.herokuapp.com/api/search?q=' + query)
 
@@ -87,7 +87,7 @@ let logic = {
         if(id === undefined) throw new Error(id + ' is not a valid query')
         if ((callback === undefined) || (typeof callback !== 'function')) throw new Error(callback + ' is not a function')
 
-        let xhr = new XMLHttpRequest
+        const xhr = new XMLHttpRequest
 
         xhr.open('GET', 'https://duckling-api.herokuapp.com/api/ducks/' + id)
 

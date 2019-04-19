@@ -6,7 +6,7 @@ class Landing extends Component{
 
         this.__literals__ = literals
 
-        let links = this.container.children
+        const links = this.container.children
 
         links[0].addEventListener('click', function(event) {
             event.preventDefault()
@@ -22,9 +22,9 @@ class Landing extends Component{
     }
 
     set language (language) {
-        let literals = this.__literals__[language]
+        const literals = this.__literals__[language]
 
-        let children = this.container.children
+        const children = this.container.children
         children[0].innerText = literals.register
         children[1].innerText = literals.or
         children[2].innerText = literals.login
