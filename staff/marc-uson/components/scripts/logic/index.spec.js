@@ -22,7 +22,7 @@ describe('logic', () => {
 
                 const currentUsersCount = users.length
 
-                logic.register(name, surname, email, password)
+                logic.registerUser(name, surname, email, password)
 
             expect(users.length).toBe(currentUsersCount + 1)
 
@@ -33,8 +33,8 @@ describe('logic', () => {
         describe('name control', () => {
             it('should fail on undefined name', () => {
                 expect(() => {
-                    logic.register(undefined, surname, email, password)
-                }).toThrowError(TypeError, 'undefined is not a valid name')
+                    logic.registerUser(undefined, surname, email, password)
+                }).toThrowError(TypeError, 'not a valid name')
             })
 
             it('should fail on empty name', () => {
@@ -42,7 +42,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register('', surname, email, password)
+                    logic.registerUser('', surname, email, password)
                 } catch(error) {
                     _error = error
                 }
@@ -56,7 +56,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(2, surname, email, password)
+                    logic.registerUser(2, surname, email, password)
                 } catch(error) {
                     _error = error
                 }
@@ -72,7 +72,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, undefined, email, password)
+                    logic.registerUser(name, undefined, email, password)
                 } catch(error) {
                     _error = error
                 }
@@ -86,7 +86,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, '', email, password)
+                    logic.registerUser(name, '', email, password)
                 } catch(error) {
                     _error = error
                 }
@@ -100,7 +100,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, 2, email, password)
+                    logic.registerUser(name, 2, email, password)
                 } catch(error) {
                     _error = error
                 }
@@ -116,7 +116,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, surname, undefined, password)
+                    logic.registerUser(name, surname, undefined, password)
                 } catch(error) {
                     _error = error
                 }
@@ -130,7 +130,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, surname, '', password)
+                    logic.registerUser(name, surname, '', password)
                 } catch(error) {
                     _error = error
                 }
@@ -144,7 +144,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, surname, 2, password)
+                    logic.registerUser(name, surname, 2, password)
                 } catch(error) {
                     _error = error
                 }
@@ -160,7 +160,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, surname, email, undefined)
+                    logic.registerUser(name, surname, email, undefined)
                 } catch(error) {
                     _error = error
                 }
@@ -174,7 +174,7 @@ describe('logic', () => {
                 let _error
 
                 try {
-                    logic.register(name, surname, email, '')
+                    logic.registerUser(name, surname, email, '')
                 } catch(error) {
                     _error = error
                 }
@@ -195,7 +195,7 @@ describe('logic', () => {
             let _error
 
             try {
-                logic.register(name, surname, email, password)
+                logic.registerUser(name, surname, email, password)
             } catch(error) {
                 _error = error
             }
@@ -216,7 +216,7 @@ describe('logic', () => {
         })
 
         it('should succeed on correct data', () => {
-            logic.login(email, password)
+            logic.loginUser(email, password)
 
             expect(logic.__userEmail__).toBe(email)
             expect(logic.__accessTime__ / 1000).toBeCloseTo(Date.now() / 1000, 1)
@@ -227,7 +227,7 @@ describe('logic', () => {
             let _error
 
             try {
-                logic.login('pepitogrillo@gmail.com', password)
+                logic.loginUser('pepitogrillo@gmail.com', password)
             } catch (error) {
                 _error = error
             }
@@ -238,13 +238,13 @@ describe('logic', () => {
 
         it('should fail on wrong password (existing user)', () => {
                 // expect(()=> {
-                //     logic.login(email, '456')
+                //     logic.loginUser(email, '456')
                 // }).toThrowError(Error, 'wrong credentials')
 
                 let _error
 
                 try {
-                    logic.login(email, '456')
+                    logic.loginUser(email, '456')
                 } catch (error) {
                     _error = error
                 }
@@ -305,22 +305,22 @@ describe('logic', () => {
 
         describe('retrieve ducks', () =>  {
             it('should succeed on correct id', (done) =>  {
-                logic.retrieveDucklingDetail('5c3853aebd1bde8520e66e11', function(duck) {
+                logic.retrieveDuck('5c3853aebd1bde8520e66e11', function(duck) {
                     expect(duck).toBeDefined()
                     expect(duck instanceof Object).toBeTruthy()
-                    
+
                     done()
                 })
             })
             it('should fail on undefined id', (done) => {
                 expect(() => {
-                    logic.retrieveDucklingDetail(undefined, () => {})
+                    logic.retrieveDuck(undefined, () => {})
                 }).toThrowError(Error, 'undefined is not a valid query')
                 done()
             })
             it('should fail on undefined function', (done) => {
                 expect(() => {
-                    logic.retrieveDucklingDetail('5c3853aebd1bde8520e66e11')
+                    logic.retrieveDuck('5c3853aebd1bde8520e66e11')
                 }).toThrowError(Error, 'undefined is not a function')
                 done()
             })

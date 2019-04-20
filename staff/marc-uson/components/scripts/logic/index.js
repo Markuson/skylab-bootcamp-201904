@@ -1,70 +1,80 @@
 'use strict'
 
 const logic = {
-    registerUser(name, surname, email, password) {
-        if ((typeof name !== 'string') || (name === undefined) || (name == '')){
-            let error = Error('not a valid name')
-            error.code = 2
-            throw error
-        }
+    registerUser(name, surname, email, password, registerDone) {
+       validate.arguments([
+        { name: "name", value: name, type: "string", notEmpty: true },
+        { name: "surname", value: surname, type: "string", notEmpty: true },
+        { name: "password", value: password, type: "string", notEmpty: true },
+       ])
 
-        if ((typeof surname !== 'string') || (surname === undefined) || (surname == '')){
-            let error = Error('not a valid surname')
-            error.code = 3
-            throw error
-        }
+       validate.email(email);
 
-        if ((typeof email !== 'string') || (email === undefined) || (email == '')){
-            let error = Error('not a valid email')
-            error.code = 4
-            throw error
-        }
+       userApi.create(name, surname, email, password, function(response) {
+        if (response.status === "OK") registerDone();
+        else registerDone(Error(response.error));
+      });
 
-        if ((password === undefined) || (password == '')){
-            let error = Error('not a valid password')
-            error.code = 5
-            throw error
-        }
+        // let exists = users.some(function(user) { return user.email === email})
 
-        let exists = users.some(function(user) { return user.email === email})
+        // if (exists){
+        //     let error = Error('User already exists!')
+        //     error.code = 6
+        //     throw error
+        // }
 
-        if (exists){
-            let error = Error('User already exists!')
-            error.code = 6
-            throw error
-        }
-
-        users.push({
-            name: name,
-            surname: surname,
-            email: email,
-            password: password
-        })
+        // users.push({
+        //     name: name,
+        //     surname: surname,
+        //     email: email,
+        //     password: password
+        // })
     },
 
-    loginUser(email, password) {
-        // TODO validate input data
+    loginUser(email, password, loginDone) {
+        validate.arguments([
+            { name: "password", value: password, type: "string", notEmpty: true },
+           ])
 
-        const user = users.find(user => user.email === email)
+        validate.email(email);
 
-        if (!user) {
-            const error = Error('wrong credentials')
+        userApi.authenticate(email, password, response => {
+            if(response.error){
+                loginDone({
+                    status : 'KO',
+                    error: response.error
+                })
+            }else{
+                const {data: {id: userId, token}} = response
 
-            error.code = 1
+                Home.__userId__ = userId
+                Home.__token__ = token,
+                loginDone();
 
-            throw error
-        }
+            }
+        })
 
-        if (user.password === password) {
-            this.__userEmail__ = email
-            this.__accessTime__ = Date.now()
-        } else {
-            const error = Error('wrong credentials')
 
-            error.code = 1
+        // const user = users.find(user => user.email === email)
 
-            throw error
-        }
+        // if (!user) {
+        //     const error = Error('wrong credentials')
+
+        //     error.code = 1
+
+        //     throw error
+        // }
+
+        // if (user.password === password) {
+        //     this.__userEmail__ = email
+        //     this.__accessTime__ = Date.now()
+        // } else {
+        //     const error = Error('wrong credentials')
+
+        //     error.code = 1
+
+        //     throw error
+        // }
     },
 
     retrieveUser() {

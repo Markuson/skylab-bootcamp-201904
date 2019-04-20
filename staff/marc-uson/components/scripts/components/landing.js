@@ -1,5 +1,3 @@
-
-
 class Landing extends Component{
     constructor(section, literals, onNavigateToRegister, onNavigateToLogin) {
         super(section)

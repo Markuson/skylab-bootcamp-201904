@@ -17,3 +17,9 @@ class RequirementError extends Error {
         super(message)
     }
 }
+
+class SearchError extends Error {
+    constructor(message) {
+        super(message)
+    }
+}

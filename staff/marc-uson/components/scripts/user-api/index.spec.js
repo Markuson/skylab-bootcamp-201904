@@ -1,15 +1,16 @@
 'use strict'
 
 describe('user api', () => {
-    const name = 'Manuel'
-    const surname = 'Barzi'
+    const name = 'Marc'
+    const surname = 'Uson'
     let username
     const password = '123'
 
-    beforeEach(() => username = `manuelbarzi-${Math.random()}@gmail.com`)
+    beforeEach(() => username = `marcuson-${Math.random()}@gmail.com`)
 
     describe('register', () => {
         it('should succeed on correct user data', done => {
+
             userApi.create(name, surname, username, password, function (response) {
                 expect(response).toBeDefined()
 
@@ -118,10 +119,143 @@ describe('user api', () => {
             expect(() => userApi.create(name, surname, nonEmail, password, () => { })).toThrowError(FormatError, `${nonEmail} is not an e-mail`)
         })
 
-        // TODO password fail cases
+        it('should fail on undefined pasword', () => {
+            const password = undefined
+
+            expect(() => userApi.create(name, surname, username, password, () => { })).toThrowError(RequirementError, `password is not optional`)
+        })
+
+        it('should fail on null pasword', () => {
+            const password = null
+
+            expect(() => userApi.create(name, surname, username, password, () => { })).toThrowError(RequirementError, `password is not optional`)
+        })
+
+        it('should fail on empty pasword', () => {
+            const password = ''
+
+            expect(() => userApi.create(name, surname, username, password, () => { })).toThrowError(ValueError, 'password is empty')
+        })
+
+        it('should fail on blank pasword', () => {
+            const password = ' \t    \n'
+
+            expect(() => userApi.create(name, surname, username, password, () => { })).toThrowError(ValueError, 'password is empty')
+        })
+
     })
 
     describe('update', () => {
-        // blah blah blah
+        // beforeEach(
+        //     (done => userApi.create(name, surname, username, password, done))
+        //     (done => userApi.authenticate(username, password, done))
+        // )
+
+        // it('should succed on updating data', () => {
+        //     userApi.update
+        // })
     })
+
+    describe('authenticate', () =>{
+        beforeEach(done => userApi.create(name, surname, username, password, done))
+
+        it('should succeed on correct authentication', done => {
+            userApi.authenticate(username, password, function (response) {
+                expect(response).toBeDefined()
+
+                const { status, data: { id , token} } = response
+
+                expect(status).toBe('OK')
+                expect(typeof status).toBe('string')
+                expect(status.length).toBeGreaterThan(0)
+                expect(typeof id).toBe('string')
+                expect(id.length).toBeGreaterThan(0)
+                expect(typeof token).toBe('string')
+                expect(token.length).toBeGreaterThan(0)
+
+                done()
+            })
+        })
+
+        it('should fail on authentication', done => {
+            const wrongUsername = 'mail@gmail.com'
+            userApi.authenticate(wrongUsername, password, function (response) {
+                expect(response).toBeDefined()
+
+                const { status, error } = response
+
+                expect(status).toBe('KO')
+                expect(typeof status).toBe('string')
+                expect(status.length).toBeGreaterThan(0)
+                expect(typeof error).toBe('string')
+                expect(error.length).toBeGreaterThan(0)
+                expect(error).toBe(`user with username \"${wrongUsername}" does not exist`)
+
+                done()
+            })
+        })
+
+        it('should fail on wrong password', done => {
+            const wrongPassword = 'wrong password'
+            userApi.authenticate(username, wrongPassword, function (response) {
+                expect(response).toBeDefined()
+
+                const { status, error } = response
+
+                expect(status).toBe('KO')
+                expect(typeof status).toBe('string')
+                expect(status.length).toBeGreaterThan(0)
+                expect(typeof error).toBe('string')
+                expect(error.length).toBeGreaterThan(0)
+                expect(error).toBe(`username and/or password wrong`)
+
+                done()
+            })
+        })
+
+        it('should fail on undefied username', () => {
+
+            expect(() =>  userApi.authenticate(undefined, password, () => { })).toThrowError(FormatError, `undefined is not an e-mail`)
+        })
+    })
+
+    // describe('retrieve', () => {
+
+    //     const id = ''
+    //     const token = ''
+    //     const name = 'Marc'
+    //     const surname = 'Uson'
+    //     let username
+    //     const password = '123'
+
+    //     beforeEach(
+    //         (()=>{
+    //             (() => username = `marcuson-${Math.random()}@gmail.com`)
+    //             (done => userApi.create(name, surname, username, password, done))
+    //             (done => userApi.authenticate(username, password, (response) => {
+
+    //                 const {data: { authId , authToken} } = response
+    //                 id = authId
+    //                 token = authToken
+    //                 done()
+    //             }))
+    //         })
+    //     )
+
+    //     it('should succes on retrieve user', done => {
+    //         userApi.retrieve(id, token, (response) => {
+    //             expect(response).toBeDefined()
+
+    //             const {expectedStatus, data: {expectedId}} = response
+
+    //             expect(expectedStatus).toBe('OK')
+    //             expect(typeof expectedStatus).toBe('string')
+    //             expect(expectedStatus.length).toBeGreaterThan(0)
+    //             expect(typeof expectedId).toBe('string')
+    //             expect(expectedId.length).toBeGreaterThan(0)
+    //             expect(expectedId).toBe(id)
+    //             done()
+    //         })
+    //     })
+    // })
 })

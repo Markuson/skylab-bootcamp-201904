@@ -17,6 +17,9 @@ class Home extends Component{
 
         const link = this.container.children[4]
 
+        this.__userId__ = ''
+        this.__token__ = ''
+
         link.addEventListener('click', function(){
             event.preventDefault()
 

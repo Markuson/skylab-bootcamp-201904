@@ -4,7 +4,6 @@ const duckApi = {
     __url__: 'https://duckling-api.herokuapp.com/api',
 
     __call__(path, callback) {
-        // TODO validate inputs
 
         const xhr = new XMLHttpRequest
 
@@ -15,15 +14,23 @@ const duckApi = {
         })
 
         xhr.send()
+
     },
 
     searchDucks(query, callback) {
-        // TODO validate inputs
-
+        validate.arguments([
+            { name: 'path', value: query, type: 'string', notEmpty: false },
+            { value: callback, type: 'function' }
+        ])
         this.__call__(`search?q=${query}`, callback)
+
     },
 
     retrieveDuck(id, callback) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { value: callback, type: 'function' }
+        ])
         // TODO validate inputs
 
         this.__call__(`ducks/${id}`, callback)

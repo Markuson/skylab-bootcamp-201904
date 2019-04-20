@@ -41,17 +41,41 @@ const userApi = {
 
         validate.email(username)
 
-        // TODO validate inputs
 
         this.__call__('/user', 'POST', { name, surname, username, password }, callback)
-        // this.__call__('/user', 'POST', undefined, callback)
     },
 
     authenticate(username, password, callback) {
-        // TODO
+        validate.arguments([
+            { name: 'password', value: password, type: 'string', notEmpty: true },
+            { value: callback, type: 'function' }
+        ])
+
+        validate.email(username)
+
+
+        this.__call__('/auth', 'POST', {username, password }, callback)
     },
 
-    retrieve(id, token, callback) {
-        // TODO
-    }
+    // retrieve(id, token, callback) {
+    //     validate.arguments([
+    //         { name: 'id', value: id, type: 'string', notEmpty: true },
+    //         { name: 'token', value: token, type: 'string', notEmpty: true },
+    //         { value: callback, type: 'function' }
+    //     ])
+
+    //     const xhr = new XMLHttpRequest
+
+    //     xhr.open(method, `${this.__url__}/${id}`)
+
+    //     xhr.addEventListener('load', function () {
+    //         callback(JSON.parse(this.responseText))
+    //     })
+
+    //     xhr.setRequestHeader('Authorisation', 'Bearer' + token)
+    //     xhr.send()
+
+
+    //     this.__call__('/auth', 'POST', token, callback)
+    // }
 }
