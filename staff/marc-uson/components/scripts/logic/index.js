@@ -11,24 +11,10 @@ const logic = {
        validate.email(email);
 
        userApi.create(name, surname, email, password, function(response) {
-        if (response.status === "OK") registerDone();
-        else registerDone(Error(response.error));
+        if (response.status === "OK") registerDone(response);
+        else registerDone(response);
       });
 
-        // let exists = users.some(function(user) { return user.email === email})
-
-        // if (exists){
-        //     let error = Error('User already exists!')
-        //     error.code = 6
-        //     throw error
-        // }
-
-        // users.push({
-        //     name: name,
-        //     surname: surname,
-        //     email: email,
-        //     password: password
-        // })
     },
 
     loginUser(email, password, loginDone) {
@@ -47,34 +33,12 @@ const logic = {
             }else{
                 const {data: {id: userId, token}} = response
 
-                Home.__userId__ = userId
-                Home.__token__ = token,
-                loginDone();
+                // Home.__userId__ = userId
+                // Home.__token__ = token,
+                loginDone(response);
 
             }
         })
-
-
-        // const user = users.find(user => user.email === email)
-
-        // if (!user) {
-        //     const error = Error('wrong credentials')
-
-        //     error.code = 1
-
-        //     throw error
-        // }
-
-        // if (user.password === password) {
-        //     this.__userEmail__ = email
-        //     this.__accessTime__ = Date.now()
-        // } else {
-        //     const error = Error('wrong credentials')
-
-        //     error.code = 1
-
-        //     throw error
-        // }
     },
 
     retrieveUser() {
