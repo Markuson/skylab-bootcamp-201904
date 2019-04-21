@@ -12,7 +12,7 @@ const languageSelector = new LanguageSelector(select, function (language) {
 
 const sections = document.getElementsByTagName('section')
 
-const landing = new Landing(sections[0], i18n.landing, () => {
+const landing = new Landing(sections[1], i18n.landing, () => {
     landing.visible = false
     register.visible = true
 }, () => {
@@ -65,7 +65,7 @@ const login = new Login(forms[1], function (email, password) {
 })
 login.visible = false
 
-const registerOk = new RegisterOk(sections[1], function () {
+const registerOk = new RegisterOk(sections[2], function () {
     registerOk.visible = false
     login.visible = true
 })

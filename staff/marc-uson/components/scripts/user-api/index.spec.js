@@ -219,43 +219,80 @@ describe('user api', () => {
         })
     })
 
-    // describe('retrieve', () => {
+    describe('retrieve', () => {
 
-    //     const id = ''
-    //     const token = ''
-    //     const name = 'Marc'
-    //     const surname = 'Uson'
-    //     let username
-    //     const password = '123'
 
-    //     beforeEach(
-    //         (()=>{
-    //             (() => username = `marcuson-${Math.random()}@gmail.com`)
-    //             (done => userApi.create(name, surname, username, password, done))
-    //             (done => userApi.authenticate(username, password, (response) => {
+        beforeEach(done => userApi.create(name, surname, username, password, done))
 
-    //                 const {data: { authId , authToken} } = response
-    //                 id = authId
-    //                 token = authToken
-    //                 done()
-    //             }))
-    //         })
-    //     )
 
-    //     it('should succes on retrieve user', done => {
-    //         userApi.retrieve(id, token, (response) => {
-    //             expect(response).toBeDefined()
+        it('should succes on retrieve user', done => {
 
-    //             const {expectedStatus, data: {expectedId}} = response
+            userApi.authenticate(username, password, (response) => {
 
-    //             expect(expectedStatus).toBe('OK')
-    //             expect(typeof expectedStatus).toBe('string')
-    //             expect(expectedStatus.length).toBeGreaterThan(0)
-    //             expect(typeof expectedId).toBe('string')
-    //             expect(expectedId.length).toBeGreaterThan(0)
-    //             expect(expectedId).toBe(id)
-    //             done()
-    //         })
-    //     })
-    // })
+                const{data: {id,token}} = response
+
+                userApi.retrieve(id, token, (response) => {
+                    expect(response).toBeDefined()
+
+                    const { status: expectedStatus, data: { name: expectedName, surname: expectedSurname, username: expectedUsername} } = response
+
+                    expect(expectedStatus).toBe('OK')
+                    expect(typeof expectedStatus).toBe('string')
+                    expect(typeof expectedName).toBe('string')
+                    expect(expectedName.length).toBeGreaterThan(0)
+                    expect(expectedName).toBe(name)
+                    expect(typeof expectedSurname).toBe('string')
+                    expect(expectedSurname.length).toBeGreaterThan(0)
+                    expect(expectedSurname).toBe(surname)
+                    expect(typeof expectedUsername).toBe('string')
+                    expect(expectedUsername.length).toBeGreaterThan(0)
+                    expect(expectedUsername).toBe(username)
+                    done()
+                })
+            })
+        })
+
+        it('fail on invalid token', done => {
+
+            userApi.authenticate(username, password, (response) => {
+
+                const{data: {id,token}} = response
+
+                userApi.retrieve(id, '1234', (response) => {
+                    expect(response).toBeDefined()
+
+                    const { status: expectedStatus, error : expectedError} = response
+
+                    expect(expectedStatus).toBe('KO')
+                    expect(typeof expectedStatus).toBe('string')
+                    expect(typeof expectedError).toBe('string')
+                    expect(expectedError.length).toBeGreaterThan(0)
+                    expect(expectedError).toBe(`invalid token`)
+                    done()
+                })
+            })
+        })
+
+        it('fail on invalid id', done => {
+
+            userApi.authenticate(username, password, (response) => {
+
+                const{data: {id,token}} = response
+
+                userApi.retrieve('1234', token, (response) => {
+                    expect(response).toBeDefined()
+
+                    const { status: expectedStatus, error : expectedError} = response
+
+                    expect(expectedStatus).toBe('KO')
+                    expect(typeof expectedStatus).toBe('string')
+                    expect(typeof expectedError).toBe('string')
+                    expect(expectedError.length).toBeGreaterThan(0)
+                    expect(expectedError).toBe(`token id \"${id}\" does not match user \"1234\"`)
+                    done()
+                })
+            })
+        })
+    })
 })
+

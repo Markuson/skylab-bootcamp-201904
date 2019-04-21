@@ -5,40 +5,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css">
     <title>My Duck e-store</title>
 </head>
 
-<body>
-    <select>
-        <option value="en">English</option>
-        <option value="es">Español</option>
-        <option value="ca">Català</option>
-        <option value="ga">Galego</option>
-    </select>
+<body class="body">
+    <header class="header">
+        <h1 class="header__title">Skylab Duckling store</h1>
+        <section class="language">
+            <p class="language__text">Select your Language</p>
+            <select class="language__selector">
+                <option class="language__option" value="en">English</option>
+                <option class="language__option" value="es">Español</option>
+                <option class="language__option" value="ca">Català</option>
+                <option class="language__option" value="ga">Galego</option>
+            </select>
+        </section>
+    </header>
 
-    <section>
+    <section class="landing">
             <a href="">Register</a> <span>or</span> <a href="">Login</a>.
     </section>
 
-    <form>
-        <h2>Register</h2>
+    <form class="register">
+        <h2 class="register__title">Register</h2>
 
-        <ul>
+        <ul class="register__form">
             <li><input type="text" name="name" placeholder="name"></li>
             <li><input type="text" name="surname" placeholder="surname"></li>
             <li><input type="text" name="email" placeholder="email"></li>
             <li><input type="password" name="password" placeholder="password"></li>
         </ul>
 
-        <button>Register</button><span> or </span><a href="">Login</a>
+        <button class="register__button">Register</button><span> or </span><a id="login-link" href="">Login</a>
 
-        <p>Error!</p>
+        <p class="register__error">Error!</p>
     </form>
 
-    <form>
-        <h2>Login</h2>
+    <form class="login">
+        <h2 class="login__title">Login</h2>
 
-        <ul>
+        <ul class="login__form">
             <li><input type="text" name="email" placeholder="email"></li>
             <li><input type="password" name="password" placeholder="password"></li>
         </ul>
@@ -48,21 +55,21 @@
         <p>Error!</p>
     </form>
 
-    <section>
+    <section class="registerOk">
         User successfully registered, you can proceed to <a href="">Login</a>.
     </section>
 
-    <main>
+    <main class="home">
         <h1>Hello, World!</h1>
 
-        <form>
+        <form class="home__search">
             <input type="text" name="query">
             <button>Search</button>
         </form>
 
-        <ul></ul>
+        <ul class="home__list"></ul>
 
-        <section>
+        <section class="home__selected">
             <h2></h2>
             <img src="">
             <p></p>

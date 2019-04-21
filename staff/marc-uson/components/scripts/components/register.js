@@ -18,7 +18,7 @@ class Register extends Component{
     feedback.visible = false
     this.__feedback__ = feedback
 
-    const link = this.container.children[4]
+    const link = document.getElementById('login-link')
 
     this.language = defaultLanguage
 

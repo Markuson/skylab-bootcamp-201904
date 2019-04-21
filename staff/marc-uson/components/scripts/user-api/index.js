@@ -3,7 +3,7 @@
 const userApi = {
     __url__: 'https://skylabcoders.herokuapp.com/api',
 
-    __call__(path, method, body, callback) {
+    __call__(path, method, body, callback, token) {
         validate.arguments([
             { name: 'path', value: path, type: 'string', notEmpty: true },
             { name: 'method', value: method, type: 'string', notEmpty: true },
@@ -18,6 +18,11 @@ const userApi = {
         xhr.addEventListener('load', function () {
             callback(JSON.parse(this.responseText))
         })
+
+        if (token){
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        }
+
 
         if (method === 'GET') {
             if (body) throw Error('cannot send body in GET request')
@@ -57,25 +62,13 @@ const userApi = {
         this.__call__('/auth', 'POST', {username, password }, callback)
     },
 
-    // retrieve(id, token, callback) {
-    //     validate.arguments([
-    //         { name: 'id', value: id, type: 'string', notEmpty: true },
-    //         { name: 'token', value: token, type: 'string', notEmpty: true },
-    //         { value: callback, type: 'function' }
-    //     ])
+    retrieve(id, token, callback) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'token', value: token, type: 'string', notEmpty: true },
+            { value: callback, type: 'function' }
+        ])
 
-    //     const xhr = new XMLHttpRequest
-
-    //     xhr.open(method, `${this.__url__}/${id}`)
-
-    //     xhr.addEventListener('load', function () {
-    //         callback(JSON.parse(this.responseText))
-    //     })
-
-    //     xhr.setRequestHeader('Authorisation', 'Bearer' + token)
-    //     xhr.send()
-
-
-    //     this.__call__('/auth', 'POST', token, callback)
-    // }
+        this.__call__('/user/'+ id, 'GET', undefined, callback, token)
+    }
 }
