@@ -25,7 +25,7 @@ const forms = document.getElementsByTagName('form')
 const register = new Register(forms[0], function (name, surname, email, password) {
     try {
         logic.registerUser(name, surname, email, password, response => {
-          if (!response) {
+          if (!response.error) {
             register.visible = false;
             registerOk.visible = true;
           } else {
@@ -47,9 +47,10 @@ register.visible = false
 const login = new Login(forms[1], function (email, password) {
     try {
         logic.loginUser(email, password, response => {
-            if (!response){
+            if (!response.error){
                 login.visible = false
                 home.visible = true
+                logic.retrieveUser()
             } else {
                 login.error = response.error
             }

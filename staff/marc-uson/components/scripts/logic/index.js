@@ -32,33 +32,27 @@ const logic = {
                 })
             }else{
                 const {data: {id: userId, token}} = response
-
-                // Home.__userId__ = userId
-                // Home.__token__ = token,
                 loginDone(response);
-
             }
         })
     },
 
-    retrieveUser() {
-        // TODO validate input
+    retrieveUser(id, token, retrieveDone) {
+        validate.arguments([
+            { name: "id", value: id, type: "string", notEmpty: true },
+            { name: "token", value: token, type: "string", notEmpty: true }
+           ])
 
-        const user = users.find(user => user.email === this.__userEmail__)
-
-        if (!user) {
-            const error = Error('user not found with email ' + email)
-
-            error.code = 2
-
-            throw error
-        }
-
-        return {
-            name: user.name,
-            surname: user.surname,
-            email: user.email
-        }
+        userApi.retrieve(id, token, response => {
+            if(response.error){
+                retrieveDone({
+                    status : 'KO',
+                    error: response.error
+                })
+            }else{
+                retrieveDone(response);
+            }
+        })
     },
 
     searchDucks(query, callback) {
