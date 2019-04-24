@@ -1,7 +1,7 @@
 const { Component, /* Fragment */ } = React
 
 class App extends Component {
-    state = { lang: i18n.language, visible: logic.isUserLoggedIn ? 'home' : 'landing', error: null, name: null }
+    state = { lang: i18n.language, visible: logic.isUserLoggedIn ? 'home' : 'landing', error: null, name: null}
 
     handleLanguageChange = lang => this.setState({ lang: i18n.language = lang }) // NOTE setter runs first, getter runs after (i18n)
 
@@ -60,7 +60,7 @@ class App extends Component {
             handleLoginNavigation,
             handleLogin,
             handleRegister,
-            handleLogout
+            handleLogout,
         } = this
 
         // return <Fragment>
