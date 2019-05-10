@@ -1,0 +1,9 @@
+extends ../index
+
+include ../search/index
+
+block content
+    h1 Hola, #{name}!
+    form(action='/logout' method='post')
+        button Logout
+    +search(query)
