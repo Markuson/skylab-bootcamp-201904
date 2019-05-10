@@ -1,7 +1,6 @@
 {
   "name": "web-app",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "dependencies": {
     "atob": "^2.1.2",
@@ -20,5 +19,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "description": ""
 }
