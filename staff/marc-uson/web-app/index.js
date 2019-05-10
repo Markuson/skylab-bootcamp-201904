@@ -56,9 +56,19 @@ app.post('/login', [checkLogin('/home'), bodyParser], (req, res) => {
 
 app.get('/home', checkLogin('/', false), (req, res) => {
     const { logic } = req
-
+    debugger
     logic.retrieveUser()
         .then(({ name }) => res.send(render(new Home().render({ name }))))
+        .catch(({ message }) => res.send(render(`<p>${message}</p>`)))
+})
+app.post('/home', [checkLogin('/', false), bodyParser], (req, res) => {
+    const { body: { query }, logic } = req
+
+    logic.searchDucks(query)
+        .then( ducks => {
+            return logic.retrieveUser()
+            .then(name => res.send(render(new Home().render({ name, query, ducks}))))
+        })
         .catch(({ message }) => res.send(render(`<p>${message}</p>`)))
 })
 
