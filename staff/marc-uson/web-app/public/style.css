@@ -7,3 +7,5 @@
 img {
     max-width: 200px;
 }
+
+@import '../node_modules/bulma/css/bulma.css'

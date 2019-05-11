@@ -1,8 +1,6 @@
 const express = require('express')
 const { injectLogic, checkLogin } = require('./middlewares')
-const render = require('./components/render')
 const package = require('./package.json')
-const { Home } = require('./components')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 
@@ -68,8 +66,8 @@ app.get('/home', checkLogin('/', false), (req, res) => {
     const { logic } = req
 
     logic.retrieveUser()
-        .then(({ name }) => res.render('home', {name})
-        .catch(({ message }) => res.render('home', {message})
+        .then(({ name }) => res.render('home', {name}))
+        .catch(({ message }) => res.render('home', {message}))
 })
 
 app.get('/home/search', checkLogin('/', false), urlencodedParser, (req, res) => {
@@ -82,9 +80,9 @@ app.get('/home/search', checkLogin('/', false), urlencodedParser, (req, res) => 
             ducks = ducks.map(({ id, title, imageUrl: image, price }) => ({ url: `/home/duck/${id}`, title, image, price }))
 
             return logic.retrieveUser()
-                .then(({ name }) => res.send(render(new Home().render({ name, query, ducks }))))
+                .then(({ name }) => res.render('home',{ name, query, ducks }))
         })
-        .catch(({ message }) => res.send(render(`<p>${message}</p>`)))
+        .catch(({ message }) => res.render('home', {message}))
 })
 
 app.get('/home/duck/:id', checkLogin('/', false), (req, res) => {
@@ -95,7 +93,7 @@ app.get('/home/duck/:id', checkLogin('/', false), (req, res) => {
             const duck = { title, image, description, price }
 
             return logic.retrieveUser()
-                .then(({ name }) => res.send(render(new Home().render({ query, name, duck }))))
+                .then(({ name }) => res.render('home', { query, name, duck }))
         })
 })
 
