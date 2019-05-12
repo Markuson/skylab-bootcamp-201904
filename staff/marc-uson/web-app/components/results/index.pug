@@ -1,4 +1,4 @@
-mixin results(message)
+mixin results()
     ul
         each duck in ducks
             li
@@ -6,3 +6,9 @@ mixin results(message)
                     h2 #{duck.title}
                     img(src=duck.image)
                     span #{duck.price}
+                form(method="POST")
+                    button(name='toggleFav' value=duck.id)
+                        if duck.isFav
+                            i(class="fas fa-heart")
+                        else
+                            i(class="far fa-heart")

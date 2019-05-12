@@ -1,5 +1,6 @@
 extends ../index
 
+include ../feedback/index
 include ../search/index
 include ../results/index
 include ../detail/index
@@ -9,6 +10,8 @@ block content
     form(action='/logout' method='post')
         button Logout
     +search(query)
+    if message
+        +feedback(message)
     if (ducks)
         +results(ducks)
     if (duck)

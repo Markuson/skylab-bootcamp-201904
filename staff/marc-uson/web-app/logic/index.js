@@ -31,8 +31,9 @@ class Logic {
         ])
 
         validate.email(email)
+        const favList = []
 
-        return userApi.create(email, password, { name, surname })
+        return userApi.create(email, password, { name, surname, favList})
             .then(response => {
                 if (response.status === 'OK') return
 
@@ -62,9 +63,9 @@ class Logic {
         return userApi.retrieve(this.__userId__, this.__userToken__)
             .then(response => {
                 if (response.status === 'OK') {
-                    const { data: { name, surname, username: email } } = response
+                    const { data: { name, surname, username: email, favList } } = response
 
-                    return { name, surname, email }
+                    return { name, surname, email, favList }
                 } else throw new LogicError(response.error)
             })
     }
@@ -105,14 +106,14 @@ class Logic {
                 const { status, data } = response
 
                 if (status === 'OK') {
-                    const { favs = [] } = data // NOTE if data.favs === undefined then favs = []
+                    const { favList = [] } = data // NOTE if data.favs === undefined then favs = []
 
-                    const index = favs.indexOf(id)
+                    const index = favList.indexOf(id)
 
-                    if (index < 0) favs.push(id)
-                    else favs.splice(index, 1)
+                    if (index < 0) favList.push(id)
+                    else favList.splice(index, 1)
 
-                    return userApi.update(this.__userId__, this.__userToken__, { favs })
+                    return userApi.update(this.__userId__, this.__userToken__, { favList })
                         .then(() => { })
                 }
 
@@ -126,13 +127,13 @@ class Logic {
                 const { status, data } = response
 
                 if (status === 'OK') {
-                    const { favs = [] } = data
+                    const { favList = [] } = data
 
-                    if (favs.length) {
-                        const calls = favs.map(fav => duckApi.retrieveDuck(fav))
+                    if (favList.length) {
+                        const calls = favList.map(fav => duckApi.retrieveDuck(fav))
 
                         return Promise.all(calls)
-                    } else return favs
+                    } else return favList
                 }
 
                 throw new LogicError(response.error)

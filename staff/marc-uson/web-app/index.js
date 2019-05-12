@@ -63,10 +63,13 @@ app.post('/login', [checkLogin('/home'), urlencodedParser], (req, res) => {
 })
 
 app.get('/home', checkLogin('/', false), (req, res) => {
-    const { logic } = req
+    const { logic, session } = req
 
     logic.retrieveUser()
-        .then(({ name }) => res.render('home', {name}))
+        .then(({ name, favList }) => {
+            session.favList = favList
+            return res.render('home', {name})
+        })
         .catch(({ message }) => res.render('home', {message}))
 })
 
@@ -74,15 +77,20 @@ app.get('/home/search', checkLogin('/', false), urlencodedParser, (req, res) => 
     const { query: { query }, logic, session } = req
 
     session.query = query
+    console.log(session.favList)
 
     logic.searchDucks(query)
         .then(ducks => {
-            ducks = ducks.map(({ id, title, imageUrl: image, price }) => ({ url: `/home/duck/${id}`, title, image, price }))
+            ducks = ducks.map(({ id, title, imageUrl: image, price }) =>{
+                isFav = session.favList.some(fav => fav.id === id)
+                console.log(isFav)
+                return { url: `/home/duck/${id}`, title, image, price, isFav, id}
+            })
 
             return logic.retrieveUser()
                 .then(({ name }) => res.render('home',{ name, query, ducks }))
         })
-        .catch(({ message }) => res.render('home', {message}))
+        .catch(({ message }) => res.render('home', { message}))
 })
 
 app.get('/home/duck/:id', checkLogin('/', false), (req, res) => {
@@ -101,6 +109,18 @@ app.post('/logout', (req, res) => {
     req.session.destroy()
 
     res.redirect('/')
+})
+
+app.post('/home/search', checkLogin('/', false), urlencodedParser, (req, res) => {
+    const{query:{query}, logic, session, body} = req
+    // console.log(query, body.toggleFav )
+    // res.render('home', {query})
+    session.query = query;
+
+  if (body.toggleFav) {
+    const id = body.toggleFav;
+    return logic.toggleFavDuck(id).then(() => res.redirect(`/home/search?query=${query}`));
+  } else res.redirect(req.url);
 })
 
 app.use(function (req, res, next) {
