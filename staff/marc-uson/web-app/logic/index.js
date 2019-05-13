@@ -128,7 +128,6 @@ class Logic {
 
                 if (status === 'OK') {
                     const { favList = [] } = data
-
                     if (favList.length) {
                         const calls = favList.map(fav => duckApi.retrieveDuck(fav))
 

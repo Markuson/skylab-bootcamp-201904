@@ -77,18 +77,34 @@ app.get('/home/search', checkLogin('/', false), urlencodedParser, (req, res) => 
     const { query: { query }, logic, session } = req
 
     session.query = query
-    console.log(session.favList)
 
     logic.searchDucks(query)
         .then(ducks => {
             ducks = ducks.map(({ id, title, imageUrl: image, price }) =>{
-                isFav = session.favList.some(fav => fav.id === id)
-                console.log(isFav)
+                isFav = session.favList.some(fav => fav == id)
                 return { url: `/home/duck/${id}`, title, image, price, isFav, id}
             })
 
             return logic.retrieveUser()
                 .then(({ name }) => res.render('home',{ name, query, ducks }))
+        })
+        .catch(({ message }) => res.render('home', { message}))
+})
+
+app.get('/home/favorites', checkLogin('/', false), urlencodedParser, (req, res) => {
+    const { query: { query }, logic, session } = req
+
+    session.query = query
+
+    logic.retrieveFavDucks()
+        .then(response => {
+            let favs
+            favs = response.map(({ id, title, imageUrl: image, price }) =>{
+                return { url: `/home/duck/${id}`, title, image, price, id}
+            })
+
+            return logic.retrieveUser()
+                .then(({ name }) => res.render('home',{ name, query, favs }))
         })
         .catch(({ message }) => res.render('home', { message}))
 })
@@ -113,8 +129,6 @@ app.post('/logout', (req, res) => {
 
 app.post('/home/search', checkLogin('/', false), urlencodedParser, (req, res) => {
     const{query:{query}, logic, session, body} = req
-    // console.log(query, body.toggleFav )
-    // res.render('home', {query})
     session.query = query;
 
   if (body.toggleFav) {

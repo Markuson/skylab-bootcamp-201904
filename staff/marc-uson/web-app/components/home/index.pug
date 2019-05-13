@@ -4,11 +4,14 @@ include ../feedback/index
 include ../search/index
 include ../results/index
 include ../detail/index
+include ../favorites/index
 
 block content
     h1 Hola, #{name}!
     form(action='/logout' method='post')
         button Logout
+    form(action='/home/favorites')
+        button Favorites
     +search(query)
     if message
         +feedback(message)
@@ -16,3 +19,5 @@ block content
         +results(ducks)
     if (duck)
         +detail(duck)
+    if(favs)
+        +favorites(favs)
