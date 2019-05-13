@@ -4,7 +4,6 @@ const package = require('./package.json')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 
-
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 const { argv: [, , port = 8080] } = process

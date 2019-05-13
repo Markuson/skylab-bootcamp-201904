@@ -7,14 +7,15 @@ include ../detail/index
 include ../favorites/index
 
 block content
-    h1 Hola, #{name}!
-    form(action='/logout' method='post')
-        button Logout
-    form(action='/home/favorites')
-        button Favorites
-    +search(query)
-    if message
-        +feedback(message)
+    container.box
+        h1.title.is-1 Hola, #{name}!
+        form(action='/logout' method='post')
+            button Logout
+        form(action='/home/favorites')
+            button Favorites
+        +search(query)
+        if message
+            +feedback(message)
     if (ducks)
         +results(ducks)
     if (duck)
