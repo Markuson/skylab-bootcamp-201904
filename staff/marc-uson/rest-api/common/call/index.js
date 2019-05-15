@@ -22,12 +22,23 @@ function call(url, options = {}) {
     ])
 
     validate.url(url)
+    debugger
 
     return fetch(url, {
         method,
         headers,
         body
     })
+        .then(response => {
+            if (!response.ok) {
+                error = new Error()
+                error.message = response.statusText
+                error.status = response.status
+            }
+            else {
+                return response
+            }
+        })
         .catch(error => {
             if (error.name === 'FetchError') throw new ConnectionError('cannot connect')
             else throw error

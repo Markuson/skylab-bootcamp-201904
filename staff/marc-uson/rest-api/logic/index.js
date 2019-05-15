@@ -58,6 +58,35 @@ const logic = {
             })
     },
 
+    updateUser(data, token) {
+        validate.arguments([
+            { name: 'token', value: token, type: 'string', notEmpty: true },
+            { name: 'data', value: data, type: 'string', notEmpty: true }
+        ])
+
+        const { id } = _token.payload(token)
+
+        return userApi.update(id, token, {data})
+            .then(response => {
+                if (response.status === 'OK') {
+                } else throw new LogicError(response.error)
+            })
+    },
+
+    // deleteUser(token) {
+    //     validate.arguments([
+    //         { name: 'token', value: token, type: 'string', notEmpty: true }
+    //     ])
+
+    //     const { id } = _token.payload(token)
+
+    //     return userApi.delete(id, token)
+    //         .then(response => {
+    //             if (response.status === 'OK') {
+    //             } else throw new LogicError(response.error)
+    //         })
+    // },
+
     searchDucks(token, query) {
         validate.arguments([
             { name: 'token', value: token, type: 'string', notEmpty: true },
