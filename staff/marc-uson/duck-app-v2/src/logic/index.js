@@ -1,20 +1,10 @@
 import normalize from '../common/normalize'
 import validate from '../common/validate'
-import userApi from '../data/user-api'
-import duckApi from '../data/duck-api'
-import { LogicError } from '../common/errors'
 import restApi from '../data/rest-api'
+import { LogicError } from '../common/errors';
 
 
 const logic = {
-    set __userId__(id) {
-        sessionStorage.userId = id
-    },
-
-    get __userId__() {
-        return normalize.undefinedOrNull(sessionStorage.userId)
-    },
-
     set __userToken__(token) {
         sessionStorage.userToken = token
     },
@@ -24,7 +14,7 @@ const logic = {
     },
 
     get isUserLoggedIn() {
-        return !!(this.__userToken__)
+        return !!this.__userToken__
     },
 
     registerUser(name, surname, email, password) {
@@ -36,10 +26,10 @@ const logic = {
         ])
 
         validate.email(email)
-        return restApi.create(name, surname, email, password)
-            .then(response => {
-                if (response.message === 'Ok, user registered. ') return
-                throw new LogicError(response.error)
+
+        return restApi.registerUser(name, surname, email, password)
+            .then(({ error }) => {
+                if (error) throw new LogicError(error)
             })
     },
 
@@ -50,34 +40,29 @@ const logic = {
         ])
 
         validate.email(email)
-        return restApi.authenticate(email, password)
-            .then(response => {
-                if (response.message === 'Ok, user authenticated. ') {
-                    const {data: { token } } = response
-                    this.__userToken__ = token
-                } else throw new LogicError(response.error)
+
+        return restApi.authenticateUser(email, password)
+            .then(({ error, token }) => {
+                if (error) throw new LogicError(error)
+
+                this.__userToken__ = token
             })
     },
 
     retrieveUser() {
-        return restApi.retrieve(this.__userToken__)
+        return restApi.retrieveUser(this.__userToken__)
             .then(response => {
-                if (response.status === 'OK') {
-                    const { data: { name, surname, username: email } } = response
+                const { error } = response
 
-                    return { name, surname, email }
-                } else throw new LogicError(response.error)
+                if (error) throw new LogicError(error)
+
+                return response
             })
     },
 
     logoutUser() {
-        // this.__userId__ = null
-        // this.__userToken__ = null
-
-        // OR fully remove all key values from session storage
         sessionStorage.clear()
     },
-
 
     searchDucks(query) {
         validate.arguments([
@@ -85,7 +70,13 @@ const logic = {
         ])
 
         return restApi.searchDucks(this.__userToken__, query)
-            .then(ducks => ducks instanceof Array? ducks : [])
+            .then(response => {
+                const { error } = response
+
+                if (error) throw new LogicError(error)
+
+                return response instanceof Array ? response : []
+            })
     },
 
     retrieveDuck(id) {
@@ -93,7 +84,14 @@ const logic = {
             { name: 'id', value: id, type: 'string' }
         ])
 
-        return restApi.retrieveDuck(id)
+        return restApi.retrieveDuck(this.__userToken__, id)
+            .then(response => {
+                const { error } = response
+
+                if (error) throw new LogicError(error)
+
+                return response
+            })
     },
 
     toggleFavDuck(id) {
@@ -101,42 +99,20 @@ const logic = {
             { name: 'id', value: id, type: 'string' }
         ])
 
-        return userApi.retrieve(this.__userId__, this.__userToken__)
-            .then(response => {
-                const { status, data } = response
-
-                if (status === 'OK') {
-                    const { favs = [] } = data // NOTE if data.favs === undefined then favs = []
-
-                    const index = favs.indexOf(id)
-
-                    if (index < 0) favs.push(id)
-                    else favs.splice(index, 1)
-
-                    return userApi.update(this.__userId__, this.__userToken__, { favs })
-                        .then(() => { })
-                }
-
-                throw new LogicError(response.error)
+        return restApi.toggleFavDuck(this.__userToken__, id)
+            .then(({ error }) => {
+                if (error) throw new LogicError(error)
             })
     },
 
     retrieveFavDucks() {
-        return restApi.retrieve(this.__userToken__)
+        return restApi.retrieveFavDucks(this.__userToken__)
             .then(response => {
-                const { status, data } = response
+                const { error } = response
 
-                if (status === 'OK') {
-                    const { favs = [] } = data
+                if (error) throw new LogicError(error)
 
-                    if (favs.length) {
-                        const calls = favs.map(fav => duckApi.retrieveDuck(fav))
-
-                        return Promise.all(calls)
-                    } else return favs
-                }
-
-                throw new LogicError(response.error)
+                return response
             })
     }
 }

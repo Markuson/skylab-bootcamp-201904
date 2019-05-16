@@ -8,6 +8,7 @@ function Search({ lang, query, onSearch }) {
         e.preventDefault()
 
         const query = e.target.query.value
+
         onSearch(query)
     }}>
         <input type="text" name="query" defaultValue={query} />
