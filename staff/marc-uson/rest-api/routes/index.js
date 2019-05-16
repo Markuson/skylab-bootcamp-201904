@@ -43,6 +43,23 @@ router.get('/users', (req, res) => {
         res)
 })
 
+router.put('/users', (req, res) => {
+    handleErrors(() => {
+        debugger
+        const { body, headers: { authorization } } = req
+
+        if (!authorization) throw new UnauthorizedError()
+
+        const token = authorization.slice(7)
+
+        if (!token) throw new UnauthorizedError()
+
+        return logic.updateUser(token, body)
+            .then(() =>res.status(201).json({message: "ok, user data updated"}))
+    },
+        res)
+})
+
 router.post('/ducks/:id/fav', (req, res) => {
     handleErrors(() => {
         const { headers: { authorization }, params: { id } } = req
