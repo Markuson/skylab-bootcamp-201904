@@ -89,11 +89,7 @@ describe('user data', () => {
 
         it('should fail on retrieving an unexisting user', () => {
             return userData.retrieve('wrong id')
-                .then(() => {throw new Error('should not reach this point')})
-                .catch(error =>{
-                    expect(error).toBeDefined()
-                    expect(error.message).toBe('user not found')
-                })
+                .then((response) =>  expect(response).toBeUndefined())
         })
     })
 
@@ -103,9 +99,9 @@ describe('user data', () => {
         beforeEach(() => fs.writeFile(userData.__file__, JSON.stringify(users)))
 
         it('should succeed on updating a field on an existing user', () => {
-            return userData.update(users[0].id, object)
+            return userData.update(users[0].id, object, false)
                 .then((response) => {
-                    expect(response).toBe('user updated')
+                    expect(response).toBeUndefined()
                     return fs.readFile(userData.__file__, 'utf8')
                         .then(JSON.parse)
                         .then(users => {
@@ -120,7 +116,29 @@ describe('user data', () => {
     })
 
     describe('find', () => {
-        // TODO
+        let _users
+
+        beforeEach(() => {
+            _users = users.concat({
+                id: `123-${Math.random()}`,
+                name: `Fulanito-${Math.random()}`,
+                surname: `Grillo-${Math.random()}`,
+                email: `pepitogrillo-${Math.random()}@mail.com`,
+                password: `123-${Math.random()}`
+            })
+
+            return fs.writeFile(userData.__file__, JSON.stringify(_users))
+        })
+
+        it('should succeed on matching existing users', () => {
+            const criteria = ({ name, email }) => (name.includes('F') || name.includes('a')) && email.includes('i')
+
+            return userData.find(criteria)
+                .then(() => userData.find(criteria))
+                .then(users => {
+                    const __users = _users.filter(criteria)
+
+                    expect(users).toEqual(__users)// TODO
 
         it('should succeed on matching existing users', () => {
             userData.find({ name: 'Pepito' })
