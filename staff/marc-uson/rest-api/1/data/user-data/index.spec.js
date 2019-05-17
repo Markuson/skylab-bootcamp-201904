@@ -139,6 +139,8 @@ describe('user data', () => {
                     const __users = _users.filter(criteria)
 
                     expect(users).toEqual(__users)// TODO
+                })
+        })
 
         it('should succeed on matching existing users', () => {
             userData.find({ name: 'Pepito' })

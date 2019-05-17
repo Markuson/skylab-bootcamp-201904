@@ -8,12 +8,11 @@ const userData = {
     __file__: path.join(__dirname, 'users.json'),
 
     __load__() {
-        return fs.readFile(this.__file__, 'utf8')
-            .then(JSON.parse)
+        return this.__users__ ? Promise.resolve(this.__users__) : fs.readFile(this.__file__, 'utf8').then(JSON.parse).then(users => this.__users__ = users)
     },
 
-    __save__(users) {
-        return fs.writeFile(this.__file__, JSON.stringify(users))
+    __save__() {
+    return fs.writeFile(this.__file__, JSON.stringify(this.__users__))
     },
 
     __cache__: {}, // WEAK cache (but just didactive for "children")
@@ -29,7 +28,7 @@ const userData = {
             .then(users => {
                 users.push(user)
 
-                return this.__save__(users)
+                return this.__save__()
             })
     },
 
@@ -86,7 +85,7 @@ const userData = {
 
             for (const key in data) users[index][key] = data[key]
 
-            return this.__save__(users)
+            return this.__save__()
         })
     }
 }
