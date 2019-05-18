@@ -1,4 +1,4 @@
-const fs = require('fs').promises
+const file = require('../../common/utils/file')
 const path = require('path')
 const uuid = require('uuid/v4')
 const validate = require('../../common/validate')
@@ -8,16 +8,14 @@ const userData = {
     __file__: path.join(__dirname, 'users.json'),
 
     __load__() {
-        return this.__users__ ? Promise.resolve(this.__users__) : fs.readFile(this.__file__, 'utf8').then(JSON.parse).then(users => this.__users__ = users)
+        return this.__users__ ? Promise.resolve(this.__users__) : file.readFile(this.__file__, 'utf8').then(JSON.parse).then(users => this.__users__ = users)
     },
 
     __save__() {
-    return fs.writeFile(this.__file__, JSON.stringify(this.__users__))
+    return file.writeFile(this.__file__, JSON.stringify(this.__users__))
     },
 
-    __cache__: {}, // WEAK cache (but just didactive for "children")
-
-        create(user) {
+    create(user) {
         validate.arguments([
             { name: 'user', value: user, type: 'object', optional: false }
         ])
@@ -51,22 +49,15 @@ const userData = {
             { name: 'criteria', value: criteria, type: 'function', notEmpty: true, optional: false }
         ])
 
-        const index = criteria.toString()
-
-        const users = this.__cache__[index]
-
-        if (!users)
-            return this.__load__()
-                .then(users => users.filter(criteria))
-                .then(users => this.__cache__[index] = users)
-        else return Promise.resolve(users)
+        return this.__load__()
+            .then(users => users.filter(criteria))
     },
 
     update(id, data, replace) {
         validate.arguments([
-            { name: 'id', value: id, type: 'string', notEmpty: true, optional: false },
-            { name: 'data', value: data, type: 'object', optional: false },
-            { name: 'replace', value: replace, type: 'boolean' }
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'data', value: data, type: 'object' },
+            { name: 'replace', value: replace, type: 'boolean', optional: true }
         ])
 
         if (data.id && id !== data.id) throw new ValueError('data id does not match criteria id')
@@ -75,13 +66,9 @@ const userData = {
         .then(users => {
             const index = users.findIndex(element => element.id == id)
 
-            if(index === -1) throw Error('user not found')
-
-            if(replace){
-                for (const key in users[index]){
+            if (replace)
+                for (const key in users[index])
                     if(key !== 'id') delete users[index][key]
-                }
-            }
 
             for (const key in data) users[index][key] = data[key]
 

@@ -1,36 +1,25 @@
 const userData = require('.')
-const fs = require('fs').promises
+const file = require('../../common/utils/file')
 const path = require('path')
+require('../../common/utils/array-random.polyfill')
 
 userData.__file__ = path.join(__dirname, 'users.test.json')
 
 describe('user data', () => {
-    const users = [
-        {
-            id: "123",
-            name: "Pepito",
-            surname: "Grillo",
-            email: "pepitogrillo@mail.com",
-            password: "123"
-        },
-        {
-            id: "456",
-            name: "John",
-            surname: "Doe",
-            email: "johndoe@mail.com",
-            password: "123"
-        },
-        {
-            id: "789",
-            name: "Pepito",
-            surname: "Palotes",
-            email: "pepitopalotes@mail.com",
-            password: "123"
-        },
-    ]
+    const names = ['Pepito', 'Fulanito', 'Menganito']
+
+    const users = new Array(Math.random(100)).fill().map(() => ({
+        id: `123-${Math.random()}`,
+        name: `${names.random()}-${Math.random()}`,
+        surname: `Grillo-${Math.random()}`,
+        email: `grillo-${Math.random()}@mail.com`,
+        password: `123-${Math.random()}`
+    }))
+
+    beforeEach(() => delete userData.__users__)
 
     describe('create', () => {
-        beforeEach(() => fs.writeFile(userData.__file__, '[]'))
+        beforeEach(() => file.writeFile(userData.__file__, '[]'))
 
         it('should succeed on correct data', () => {
             const user = {
@@ -44,7 +33,7 @@ describe('user data', () => {
                 .then(() => {
                     expect(typeof user.id).toBe('string')
 
-                    return fs.readFile(userData.__file__, 'utf8')
+                    return file.readFile(userData.__file__, 'utf8')
                 })
                 .then(content => {
                     expect(content).toBeDefined()
@@ -62,7 +51,7 @@ describe('user data', () => {
     })
 
     describe('list', () => {
-        beforeEach(() => fs.writeFile(userData.__file__, JSON.stringify(users)))
+        beforeEach(() => file.writeFile(userData.__file__, JSON.stringify(users)))
 
         it('should succeed and return items if users exist', () => {
             return userData.list()
@@ -76,36 +65,63 @@ describe('user data', () => {
     })
 
     describe('retrieve', () => {
-        beforeEach(() => fs.writeFile(userData.__file__, JSON.stringify(users)))
+        beforeEach(() => file.writeFile(userData.__file__, JSON.stringify(users)))
 
         it('should succeed on an already existing user', () => {
-            return userData.retrieve(users[0].id)
-                .then(user => {
-                    expect(user).toBeDefined()
+            const user = users[Math.random(users.length - 1)]
 
-                    expect(user).toEqual(users[0])
-                })
-        })
-
-        it('should fail on retrieving an unexisting user', () => {
-            return userData.retrieve('wrong id')
-                .then((response) =>  expect(response).toBeUndefined())
+            return userData.retrieve(user.id)
+                .then(_user =>
+                    expect(_user).toEqual(user)
+                )
         })
     })
 
     describe('update', () => {
-        let object = {name:'name'}
+        beforeEach(() => file.writeFile(userData.__file__, JSON.stringify(users)))
 
-        beforeEach(() => fs.writeFile(userData.__file__, JSON.stringify(users)))
+        describe('replacing', () => {
+            it('should succeed on correct data', () => {
+                const user = users[Math.random(users.length - 1)]
 
-        it('should succeed on updating a field on an existing user', () => {
-            return userData.update(users[0].id, object, false)
-                .then((response) => {
-                    expect(response).toBeUndefined()
-                    return fs.readFile(userData.__file__, 'utf8')
-                        .then(JSON.parse)
-                        .then(users => {
-                            expect(users[0].name).toBe(object.name)
+                const data = { name: 'n', email: 'e', password: 'p', lastAccess: Date.now() }
+
+                return userData.update(user.id, data, true)
+                    .then(() => file.readFile(userData.__file__, 'utf8'))
+                    .then(JSON.parse)
+                    .then(users => {
+                        const _user = users.find(({ id }) => id === user.id)
+
+                        expect(_user).toBeDefined()
+
+                        expect(_user.id).toEqual(user.id)
+
+                        expect(_user).toMatchObject(data)
+
+                        expect(Object.keys(_user).length).toEqual(Object.keys(data).length + 1)
+                    })
+            })
+        })
+
+        describe('not replacing', () => {
+            it('should succeed on correct data', () => {
+                const user = users[Math.random(users.length - 1)]
+
+                const data = { name: 'n', surname: 's', email: 'e', password: 'p', lastAccess: Date.now() }
+
+                return userData.update(user.id, data)
+                    .then(() => file.readFile(userData.__file__, 'utf8'))
+                    .then(JSON.parse)
+                    .then(users => {
+                        const _user = users.find(({ id }) => id === user.id)
+
+                        expect(_user).toBeDefined()
+
+                        expect(_user.id).toEqual(user.id)
+
+                        expect(_user).toMatchObject(data)
+
+                        expect(Object.keys(_user).length).toEqual(Object.keys(data).length + 1)
                         })
                 })
         })
@@ -127,7 +143,7 @@ describe('user data', () => {
                 password: `123-${Math.random()}`
             })
 
-            return fs.writeFile(userData.__file__, JSON.stringify(_users))
+            return file.writeFile(userData.__file__, JSON.stringify(_users))
         })
 
         it('should succeed on matching existing users', () => {
@@ -138,18 +154,10 @@ describe('user data', () => {
                 .then(users => {
                     const __users = _users.filter(criteria)
 
-                    expect(users).toEqual(__users)// TODO
+                    expect(users).toEqual(__users)
                 })
         })
-
-        it('should succeed on matching existing users', () => {
-            userData.find({ name: 'Pepito' })
-                .then(_users => {
-                    // TODO
-                })
-        })
-
     })
 
-    afterAll(() => fs.writeFile(userData.__file__, '[]'))
+    afterAll(() => file.writeFile(userData.__file__, '[]'))
 })
