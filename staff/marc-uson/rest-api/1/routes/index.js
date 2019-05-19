@@ -53,6 +53,36 @@ router.post('/ducks/:id/fav', auth, (req, res) => {
         res)
 })
 
+router.post('/ducks/:id/addcart', auth, (req, res) => {
+    handleErrors(() => {
+        const { userId, params: { id } } = req
+
+        return logic.addDuckToCart(userId, id)
+            .then(() => res.json({ message: 'Ok, duck added to cart.' }))
+    },
+        res)
+})
+
+router.post('/ducks/:id/delcart', auth, (req, res) => {
+    handleErrors(() => {
+        const { userId, params: { id } } = req
+
+        return logic.addDuckToCart(userId, id)
+            .then(() => res.json({ message: 'Ok, duck deleted from cart.' }))
+    },
+        res)
+})
+
+router.get('/ducks/cart', auth, (req, res) => {
+    handleErrors(() => {
+        const { userId } = req
+
+        return logic.retrieveSoppingCart(userId)
+            .then(ducks => res.json(ducks))
+    },
+        res)
+})
+
 router.get('/ducks/fav', auth, (req, res) => {
     handleErrors(() => {
         const { userId } = req

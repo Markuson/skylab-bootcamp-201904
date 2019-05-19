@@ -1,16 +1,1 @@
-[
-    {
-        "id": "123",
-        "name": "Pepito",
-        "surname": "Grillo",
-        "email": "pepitogrillo@mail.com",
-        "password": "123"
-    },
-    {
-        "id": "456",
-        "name": "John",
-        "surname": "Doe",
-        "email": "johndoe@mail.com",
-        "password": "123"
-    }
-]
+[{"id":"123","name":"Pepito","surname":"Grillo","email":"pepitogrillo@mail.com","password":"123"},{"id":"456","name":"John","surname":"Doe","email":"johndoe@mail.com","password":"123"},{"email":"w@w.com","password":"123","name":"n","surname":"s","id":"aad36989-1e57-4d7c-b5d2-e86fd5238155","favs":["5c3853aebd1bde8520e66e16","5c3853aebd1bde8520e66e2a","5c3853aebd1bde8520e66e52","5c3853aebd1bde8520e66e59","5c3853aebd1bde8520e66e1b"]}]

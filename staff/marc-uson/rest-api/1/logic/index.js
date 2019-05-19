@@ -122,6 +122,65 @@ const logic = {
                     return Promise.all(calls)
                 } else return favs
             })
+    },
+
+    addDuckToCart(id, duckId) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'duckId', value: duckId, type: 'string', notEmpty: true }
+        ])
+
+        return userData.retrieve(id)
+            .then(user => {
+                const { cart = [] } = user
+
+                const index = cart.findIndex(item => item.duckId === duckId)
+                if (index < 0) cart.push({duckId: duckId, items: 1})
+
+                    else{
+                        cart[index].items = cart[index].items + 1
+                    }
+
+                    return userData.update(id, { cart })
+                        .then(() => { })
+            })
+    },
+
+    deleteDuckFromCart(id, duckId) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'duckId', value: duckId, type: 'string', notEmpty: true }
+        ])
+
+        return userData.retrieve(id)
+            .then(user => {
+                const { cart = [] } = user
+
+                const index = cart.findIndex(item => item.duckId === duckId)
+
+                if (index < 0) return
+                    else cart.splice(index, 1)
+
+                    return userData.update(id, { cart })
+                        .then(() => { })
+            })
+    },
+
+    retrieveSoppingCart(id) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true }
+        ])
+
+        return userData.retrieve(id)
+            .then(user => {
+                const { cart = [] } = user
+
+                if (cart.length) {
+                    const calls = cart.map(item => duckApi.retrieveDuck(item.duckId))
+
+                    return Promise.all(calls)
+                } else return cart
+            })
     }
 }
 
