@@ -66,6 +66,7 @@ class App extends Component {
         this.props.history.push('/')
     }
 
+
     componentDidUpdate(prevProps) {
         if (this.props.location !== prevProps.location) this.setState({ visible: null })
     }

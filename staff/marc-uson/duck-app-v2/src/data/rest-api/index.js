@@ -69,7 +69,6 @@ const restApi = {
     },
 
     searchDucks(token, query) {
-        debugger
         validate.arguments([
             { name: 'token', value: token, type: 'string', notEmpty: true },
             { name: 'query', value: query, type: 'string' }

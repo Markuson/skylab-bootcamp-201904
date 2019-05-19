@@ -4,12 +4,13 @@ import logic from '../../logic'
 import Search from '../Search'
 import Results from '../Results'
 import Detail from '../Detail'
+import Favorites from '../Favorites'
 import './index.sass'
 import { withRouter } from 'react-router-dom'
 import queryString from 'query-string'
 
 class Home extends Component {
-    state = { query: null, error: null, ducks: null, duck: null, favs: null }
+    state = { query: null, error: null, ducks: null, duck: null, favs: null, favList: null}
 
     componentWillReceiveProps(props) {
         if (props.location.search) {
@@ -26,7 +27,7 @@ class Home extends Component {
     search = query =>
         Promise.all([logic.searchDucks(query), logic.retrieveFavDucks()])
             .then(([ducks, favs]) =>
-                this.setState({ query, duck: null, ducks: ducks.map(({ id, title, imageUrl: image, price }) => ({ id, title, image, price })), favs })
+                this.setState({ query, duck: null, favList: null, ducks: ducks.map(({ id, title, imageUrl: image, price }) => ({ id, title, image, price })), favs })
             )
             .catch(error =>
                 this.setState({ error: error.message })
@@ -36,8 +37,8 @@ class Home extends Component {
 
     retrieve = id =>
         logic.retrieveDuck(id)
-            .then(({ title, imageUrl: image, description, price }) =>
-                this.setState({ duck: { title, image, description, price } })
+            .then(({ title, imageUrl: image, description, price, id }) =>
+                this.setState({ duck: { title, image, description, price, id }, favList: null })
             )
             .catch(error =>
                 this.setState({ error: error.message })
@@ -50,23 +51,33 @@ class Home extends Component {
             .then(() => logic.retrieveFavDucks())
             .then(favs => this.setState({ favs }))
 
+    handleFavList = () =>
+        logic.retrieveFavDucks()
+        .then(response => {
+            this.setState({favList: response, duck: null})
+            this.props.history.push(`/home/favorites`)
+        })
+
     render() {
         const {
             handleSearch,
             handleRetrieve,
             handleFav,
-            state: { query, ducks, duck, favs },
+            handleFavList,
+            state: { query, ducks, duck, favs, favList},
             props: { lang, name, onLogout }
         } = this
 
-        const { hello, logout } = literals[lang]
+        const { hello, logout, favorites } = literals[lang]
 
         return <main className="home">
             <h1>{hello}, {name}!</h1>
             <button onClick={onLogout}>{logout}</button>
+            <button onClick={handleFavList}>{favorites}</button>
             <Search lang={lang} query={query} onSearch={handleSearch} />
-            {!duck && ducks && (ducks.length && <Results items={ducks} onItem={handleRetrieve} onFav={handleFav} favs={favs} /> || <p>No results.</p>)}
+            {!duck&& !favList && ducks && (ducks.length && <Results items={ducks} onItem={handleRetrieve} onFav={handleFav} favs={favs} /> || <p>No results.</p>)}
             {duck && <Detail item={duck} />}
+            {favList && <Favorites items={favList} onItem={handleRetrieve} onFav={handleFav} favs={favs} />}
         </main>
     }
 }

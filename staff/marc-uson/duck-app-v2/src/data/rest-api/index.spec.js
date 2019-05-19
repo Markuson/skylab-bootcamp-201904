@@ -177,7 +177,7 @@ describe('rest api', () => {
             afterEach(() => restApi.__timeout__ = 0)
         })
 
-        xdescribe('update', () => { // TODO refactor
+        describe('update', () => { // TODO refactor
             let token, _data
 
             beforeEach(() => {
@@ -350,7 +350,7 @@ describe('rest api', () => {
                     })
             })
 
-            it('should succeed adding fav on first time', () =>
+            it('should succeed retrieving favorites', () =>
                 restApi.retrieveFavDucks(token)
                     .then(ducks => {
                         ducks.forEach(({ id, title, imageUrl, description, price }) => {
@@ -370,6 +370,150 @@ describe('rest api', () => {
             )
         })
 
-        // TODO other cases
+        describe('shopping cart', () => {
+
+            describe('adding and deleting ducks from cart', () => {
+                let duckId
+
+                beforeEach(() =>
+                    restApi.searchDucks(token, '')
+                        .then(ducks => duckId = ducks[0].id)
+                )
+
+
+                it('should succed adding a new duck to the shopping cart', () =>
+                    logic.addDuckToCart(token, duckId)
+                        .then(response => {
+                            expect(response).toBeDefined()
+                            const { message } = response
+                            expect(message).toBe('ok, duck added')
+                        })
+                        .then(() => restApi.retrieveUser(token))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(1)
+                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].items).toBe(1)
+                        })
+                )
+
+                it('should succed adding an other existing duck to the shopping cart', () =>
+                    logic.addDuckToCart(token, duckId)
+                        .then( () => logic.addDuckToCart(token, duckId))
+                        .then(response => {
+                            expect(response).toBeDefined()
+                            const { message } = response
+                            expect(message).toBe('ok, duck added')
+                        })
+                        .then(() => restApi.retrieveUser(token))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(1)
+                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].items).toBe(2)
+                        })
+                )
+                it('should succed deleting a duck from the shopping cart', () =>
+                    logic.addDuckToCart(token, duckId)
+                        .then(() => restApi.retrieveUser(token))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(1)
+                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].items).toBe(1)
+                            logic.deleteDuckFromCart(id, duckId)}
+                            )
+                        .then(response => {
+                            expect(response).toBeDefined()
+                            const { message } = response
+                            expect(message).toBe('ok, duck deleted')
+                        })
+                        .then(() => restApi.retrieveUser(id))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(0)
+                        })
+                )
+
+                it('should fail on null token on adding duck', () => {
+                    token = null
+                    expect( () => logic.addDuckToCart(token, duckId).toThrowError(RequirementError, 'id is not optional'))
+                })
+
+                it('should fail on null duckId on adding duck', () => {
+                    duckId = null
+                    expect( () => logic.addDuckToCart(token, duckId).toThrowError(RequirementError, 'duckId is not optional'))
+                })
+
+                it('should fail on null id on deleting duck', () => {
+                    token = null
+                    expect( () => logic.deleteDuckFromCart(token, duckId).toThrowError(RequirementError, 'id is not optional'))
+                })
+
+                it('should fail on null duckId on deleting duck', () => {
+                    duckId = null
+                    expect( () => logic.deleteDuckFromCart(token, duckId).toThrowError(RequirementError, 'duckId is not optional'))
+                })
+            })
+
+            describe('retrieve shopping cart', () => {
+                let _favs
+
+                beforeEach(() => {
+                    _cart = []
+
+                    return restApi.searchDucks(token, '')
+                        .then(ducks => {
+                            const toggles = []
+
+                            for (let i = 0; i < 10; i++) {
+                                const randomIndex = Math.floor(Math.random() * ducks.length)
+
+                                const duckId = _cart[i] = ducks.splice(randomIndex, 1)[0].id
+
+                                toggles.push(restApi.addDuckToCart(token, duckId))
+                            }
+
+                            return Promise.all(toggles)
+                        })
+                })
+
+                it('should succes on retrieving the sopping cart', () =>
+                    restApi.retrieveSoppingCart(token)
+                        .then(shoppingCart => {
+
+                            shoppingCart.forEach(({ id, title, imageUrl, price }) => {
+                                const inCart = _cart.some(item => item.duckId === id)
+
+                                expect(inCart).toBeTruthy()
+                                expect(typeof title).toBe('string')
+                                expect(title.length).toBeGreaterThan(0)
+                                expect(typeof imageUrl).toBe('string')
+                                expect(imageUrl.length).toBeGreaterThan(0)
+                                expect(typeof price).toBe('string')
+                                expect(price.length).toBeGreaterThan(0)
+                            })
+                        })
+                )
+
+                it('should fail on null id on retrieving cart', () => {
+                    token = null
+                    expect( () => logic.retrieveSoppingCart(token).toThrowError(RequirementError, 'id is not optional'))
+                })
+            })
+        })
+        })
     })
 })

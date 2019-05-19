@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeart as faHeartSolid} from '@fortawesome/free-solid-svg-icons'
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons'
 
-function Results({ items, onItem, onFav, favs }) {
+function Results({ items, onItem, onFav, favs}) {
     return <ul>
         {
-            items.map(({ id, title, image, price }) =>{
+            items.map(({ id, title, imageUrl, price }) =>{
                 const isFav = favs.some(fav => fav.id === id)
 
                 return <li key={id} onClick={() => onItem(id)}>
@@ -16,7 +16,7 @@ function Results({ items, onItem, onFav, favs }) {
 
                         onFav(id)
                     }} />
-                    <img src={image} />
+                    <img src={imageUrl} />
                     <span>{price}</span>
                 </li>
             })
