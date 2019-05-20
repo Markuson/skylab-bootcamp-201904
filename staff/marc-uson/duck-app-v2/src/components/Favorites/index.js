@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeart as faHeartSolid} from '@fortawesome/free-solid-svg-icons'
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons'
 
-function Results({ items, onItem, onFav, favs}) {
+function Favorites({ items, onItem, onFav, favs}) {
     return <ul>
         {
             items.map(({ id, title, imageUrl, price }) =>{
@@ -24,4 +24,4 @@ function Results({ items, onItem, onFav, favs}) {
     </ul>
 }
 
-export default Results
+export default Favorites

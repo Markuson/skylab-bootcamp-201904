@@ -35,7 +35,7 @@ describe('rest api', () => {
 
                             const { error: _error } = response
 
-                            expect(_error).toBe(`user with username \"${email}\" already exists`)
+                            expect(_error).toBe(`user with email \"${email}\" already exists`)
                         })
                 )
             })
@@ -83,13 +83,6 @@ describe('rest api', () => {
 
                         expect(typeof token).toBe('string')
                         expect(token.length).toBeGreaterThan(0)
-
-                        const [, payloadB64,] = token.split('.')
-                        const payloadJson = atob(payloadB64)
-                        const payload = JSON.parse(payloadJson)
-
-                        expect(typeof payload.id).toBe('string')
-                        expect(payload.id.length).toBeGreaterThan(0)
                     })
             )
 
@@ -100,7 +93,7 @@ describe('rest api', () => {
 
                         const { error } = response
 
-                        expect(error).toBe(`user with username \"${email}\" does not exist`)
+                        expect(error).toBe(`user with email \"${email}\" does not exist`)
                     })
             )
         })
@@ -132,7 +125,7 @@ describe('rest api', () => {
                     .then(response => {
                         const { error } = response
 
-                        expect(error).toBe('invalid token')
+                        expect(error).toBe('jwt malformed')
                     })
             })
         })
@@ -184,23 +177,17 @@ describe('rest api', () => {
                 _data = { array: [1, "2", true], hello: 'world', object: { key: 'value' } }
 
                 return restApi.registerUser(name, surname, email, password)
-                    .then(response => {
-                        _id = response.data.id
-
-                        return restApi.authenticateUser(email, password)
-                    })
-                    .then(response => token = response.data.token)
+                    .then(() => restApi.authenticateUser(email, password))
+                    .then(response => token = response.token)
             })
 
             it('should succeed on correct data', () =>
-                restApi.updateUser(_id, token, _data)
+                restApi.updateUser(token, _data)
                     .then(response => {
-                        const { status, data } = response
-
-                        expect(status).toBe('OK')
+                        expect(response).toBe('OK')
                         expect(data).toBeUndefined()
                     })
-                    .then(() => restApi.retrieveUser(_id, token))
+                    .then(() => restApi.retrieveUser(token))
                     .then(response => {
                         const { status, data } = response
 
@@ -220,7 +207,7 @@ describe('rest api', () => {
             )
 
             it('should succeed on correct data re-updating', () =>
-                restApi.updateUser(_id, token, _data)
+                restApi.updateUser(token, _data)
                     .then(response => {
                         const { status, data } = response
 
@@ -232,7 +219,7 @@ describe('rest api', () => {
                         _data.hello = 'mundo'
                         _data.object = { property: 'something' }
 
-                        return restApi.updateUser(_id, token, _data)
+                        return restApi.updateUser(token, _data)
                     })
                     .then(response => {
                         const { status, data } = response
@@ -374,102 +361,90 @@ describe('rest api', () => {
 
             describe('adding and deleting ducks from cart', () => {
                 let duckId
-
-                beforeEach(() =>
-                    restApi.searchDucks(token, '')
-                        .then(ducks => duckId = ducks[0].id)
-                )
+                beforeEach(() =>{
+                    return restApi.searchDucks(token, 'blue')
+                        .then(ducks =>{
+                            duckId = ducks[0].id
+                        })
+                })
 
 
                 it('should succed adding a new duck to the shopping cart', () =>
-                    logic.addDuckToCart(token, duckId)
+                    restApi.addDuckToCart(token, duckId)
                         .then(response => {
                             expect(response).toBeDefined()
                             const { message } = response
-                            expect(message).toBe('ok, duck added')
+                            expect(message).toBe('Ok, duck added to cart.')
                         })
-                        .then(() => restApi.retrieveUser(token))
-                        .then(user => {
-                            const { cart } = user
-
+                        .then(() => restApi.retrieveShoppingCart(token))
+                        .then(cart => {
                             expect(cart).toBeDefined()
-                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toBeInstanceOf(Object)
                             expect(cart).toHaveLength(1)
-                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].id).toBe(duckId)
                             expect(cart[0].items).toBe(1)
                         })
                 )
 
                 it('should succed adding an other existing duck to the shopping cart', () =>
-                    logic.addDuckToCart(token, duckId)
-                        .then( () => logic.addDuckToCart(token, duckId))
+                    restApi.addDuckToCart(token, duckId)
+                        .then( () => restApi.addDuckToCart(token, duckId))
                         .then(response => {
                             expect(response).toBeDefined()
                             const { message } = response
-                            expect(message).toBe('ok, duck added')
+                            expect(message).toBe('Ok, duck added to cart.')
                         })
-                        .then(() => restApi.retrieveUser(token))
-                        .then(user => {
-                            const { cart } = user
-
+                        .then(() => restApi.retrieveShoppingCart(token))
+                        .then(cart => {
                             expect(cart).toBeDefined()
-                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toBeInstanceOf(Object)
                             expect(cart).toHaveLength(1)
-                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].id).toBe(duckId)
                             expect(cart[0].items).toBe(2)
                         })
                 )
                 it('should succed deleting a duck from the shopping cart', () =>
-                    logic.addDuckToCart(token, duckId)
-                        .then(() => restApi.retrieveUser(token))
-                        .then(user => {
-                            const { cart } = user
-
+                    restApi.addDuckToCart(token, duckId)
+                        .then(() => restApi.retrieveShoppingCart(token))
+                        .then(cart => {
                             expect(cart).toBeDefined()
-                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toBeInstanceOf(Object)
                             expect(cart).toHaveLength(1)
-                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].id).toBe(duckId)
                             expect(cart[0].items).toBe(1)
-                            logic.deleteDuckFromCart(id, duckId)}
+                            restApi.deleteDuckFromCart(token, duckId)}
                             )
-                        .then(response => {
-                            expect(response).toBeDefined()
-                            const { message } = response
-                            expect(message).toBe('ok, duck deleted')
-                        })
-                        .then(() => restApi.retrieveUser(id))
-                        .then(user => {
-                            const { cart } = user
-
+                        .then(() => restApi.retrieveShoppingCart(token))
+                        .then(cart => {
                             expect(cart).toBeDefined()
-                            expect(cart).toBeInstanceOf(Array)
-                            expect(cart).toHaveLength(0)
+                            expect(cart).toBeInstanceOf(Object)
+                            expect(cart).toHaveLength(1)
                         })
                 )
 
                 it('should fail on null token on adding duck', () => {
                     token = null
-                    expect( () => logic.addDuckToCart(token, duckId).toThrowError(RequirementError, 'id is not optional'))
+                    expect( () => restApi.addDuckToCart(token, duckId).toThrowError(RequirementError, 'id is not optional'))
                 })
 
                 it('should fail on null duckId on adding duck', () => {
                     duckId = null
-                    expect( () => logic.addDuckToCart(token, duckId).toThrowError(RequirementError, 'duckId is not optional'))
+                    expect( () => restApi.addDuckToCart(token, duckId).toThrowError(RequirementError, 'duckId is not optional'))
                 })
 
                 it('should fail on null id on deleting duck', () => {
                     token = null
-                    expect( () => logic.deleteDuckFromCart(token, duckId).toThrowError(RequirementError, 'id is not optional'))
+                    expect( () => restApi.deleteDuckFromCart(token, duckId).toThrowError(RequirementError, 'id is not optional'))
                 })
 
                 it('should fail on null duckId on deleting duck', () => {
                     duckId = null
-                    expect( () => logic.deleteDuckFromCart(token, duckId).toThrowError(RequirementError, 'duckId is not optional'))
+                    expect( () => restApi.deleteDuckFromCart(token, duckId).toThrowError(RequirementError, 'duckId is not optional'))
                 })
             })
 
             describe('retrieve shopping cart', () => {
-                let _favs
+                let _cart
 
                 beforeEach(() => {
                     _cart = []
@@ -513,7 +488,6 @@ describe('rest api', () => {
                     expect( () => logic.retrieveSoppingCart(token).toThrowError(RequirementError, 'id is not optional'))
                 })
             })
-        })
         })
     })
 })

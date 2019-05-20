@@ -49,14 +49,13 @@ const restApi = {
             .then(response => response.json())
     },
 
-    updateUser(id, token, data) { // TODO refactor
+    updateUser(token, data) { // TODO refactor
         validate.arguments([
-            { name: 'id', value: id, type: 'string', notEmpty: true },
             { name: 'token', value: token, type: 'string', notEmpty: true },
             { name: 'data', value: data, type: 'object', notEmpty: true }
         ])
 
-        return call(`${this.__url__}/user/${id}`, {
+        return call(`${this.__url__}/users`, {
             method: 'PUT',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -126,7 +125,52 @@ const restApi = {
             timeout: this.__timeout__
         })
             .then(response => response.json())
-    }
+    },
+
+    addDuckToCart(token, duckId) {
+        validate.arguments([
+            { name: 'token', value: token, type: 'string', notEmpty: true },
+            { name: 'duckId', value: duckId, type: 'string', notEmpty: true }
+        ])
+        return call(`${this.__url__}/ducks/${duckId}/addcart`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            timeout: this.__timeout__
+        })
+            .then(response => response.json())
+    },
+
+    deleteDuckFromCart(token, duckId) {
+        validate.arguments([
+            { name: 'token', value: token, type: 'string', notEmpty: true },
+            { name: 'duckId', value: duckId, type: 'string', notEmpty: true }
+        ])
+
+        return call(`${this.__url__}/ducks/${duckId}/delcart`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            timeout: this.__timeout__
+        })
+            .then(response => response.json())
+    },
+
+    retrieveShoppingCart(token) {
+        validate.arguments([
+            { name: 'token', value: token, type: 'string', notEmpty: true }
+        ])
+
+        return call(`${this.__url__}/ducks/cart`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            timeout: this.__timeout__
+        })
+            .then(response => response.json())
+    },
 }
 
 

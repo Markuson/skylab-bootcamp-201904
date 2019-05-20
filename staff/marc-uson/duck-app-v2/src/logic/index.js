@@ -114,7 +114,39 @@ const logic = {
 
                 return response
             })
-    }
+    },
+
+    addDuckToCart(id) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string' }
+        ])
+
+        return restApi.addDuckToCart(this.__userToken__, id)
+            .then(({ error }) => {
+                if (error) throw new LogicError(error)
+            })
+    },
+    deleteDuckFromCart(id) {
+        validate.arguments([
+            { name: 'id', value: id, type: 'string' }
+        ])
+
+        return restApi.deleteDuckFromCart(this.__userToken__, id)
+            .then(({ error }) => {
+                if (error) throw new LogicError(error)
+            })
+    },
+
+    retrieveSoppingCart() {
+        return restApi.retrieveShoppingCart(this.__userToken__)
+            .then(response => {
+                const { error } = response
+
+                if (error) throw new LogicError(error)
+
+                return response
+            })
+    },
 }
 
 export default logic

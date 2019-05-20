@@ -4,7 +4,7 @@ import restApi from '../data/rest-api'
 
 jest.setTimeout(100000)
 
-describe('logic', () => {
+xdescribe('logic', () => {
     describe('users', () => {
         const name = 'Manuel'
         const surname = 'Barzi'
@@ -34,7 +34,7 @@ describe('logic', () => {
 
                             expect(error instanceof LogicError).toBeTruthy()
 
-                            expect(error.message).toBe(`user with username \"${email}\" already exists`)
+                            expect(error.message).toBe(`user with email \"${email}\" already exists`)
                         })
                 )
             })
@@ -151,7 +151,7 @@ describe('logic', () => {
                         expect(error).toBeDefined()
                         expect(error instanceof LogicError).toBeTruthy()
 
-                        expect(error.message).toBe(`user with username \"${email}\" does not exist`)
+                        expect(error.message).toBe(`user with email \"${email}\" does not exist`)
                     })
             )
         })

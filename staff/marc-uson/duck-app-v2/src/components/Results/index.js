@@ -13,7 +13,6 @@ function Results({ items, onItem, onFav, favs }) {
                     <h2>{title}</h2>
                     <FontAwesomeIcon icon={isFav ? faHeartSolid : faHeartRegular} onClick={e => {
                         e.stopPropagation()
-
                         onFav(id)
                     }} />
                     <img src={image} />
