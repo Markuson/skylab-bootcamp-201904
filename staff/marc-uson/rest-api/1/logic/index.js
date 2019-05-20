@@ -176,7 +176,18 @@ const logic = {
                 const { cart = [] } = user
 
                 if (cart.length) {
-                    const calls = cart.map(item => duckApi.retrieveDuck(item.duckId))
+                    const calls = cart.map(item => {
+                        return duckApi.retrieveDuck(item.duckId)
+                            .then(({id, title, imageUrl, price }) => {
+                                return{
+                                    id,
+                                    title,
+                                    imageUrl,
+                                    price,
+                                    items: item.items
+                                }
+                            })
+                    })
 
                     return Promise.all(calls)
                 } else return cart

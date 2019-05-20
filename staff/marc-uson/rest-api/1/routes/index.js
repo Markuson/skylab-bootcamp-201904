@@ -114,6 +114,4 @@ router.get('/ducks/:id', auth, (req, res) => {
         res)
 })
 
-// TODO other routes (update, delete...)
-
 module.exports = router
