@@ -14,12 +14,13 @@ const logic = {
 
         validate.email(email)
 
-        return userData.find(user => user.email === email)
-            .then(users => {
-                if (users.length) throw new LogicError(`user with email "${email}" already exists`)
+        return ( async () => {
+            const users = await userData.find(user => user.email === email)
+            if (users.length) throw new LogicError(`user with email "${email}" already exists`)
 
-                return userData.create({ email, password, name, surname })
-            })
+            return await userData.create({ email, password, name, surname })
+        })()
+
     },
 
     authenticateUser(email, password) {
@@ -30,16 +31,16 @@ const logic = {
 
         validate.email(email)
 
-        return userData.find(user => user.email === email)
-            .then(users => {
-                if (!users.length) throw new LogicError(`user with email "${email}" does not exist`)
+        return (async () => {
+            const users = await userData.find(user => user.email === email)
+            if (!users.length) throw new LogicError(`user with email "${email}" does not exist`)
 
-                const [user] = users
+            const [user] = users
 
-                if (user.password !== password) throw new LogicError('wrong credentials')
+            if (user.password !== password) throw new LogicError('wrong credentials')
 
-                return user.id
-            })
+            return user.id
+        })()
     },
 
     retrieveUser(id) {
@@ -47,14 +48,15 @@ const logic = {
             { name: 'id', value: id, type: 'string', notEmpty: true }
         ])
 
-        return userData.retrieve(id)
-            .then(user => {
-                if (!user) throw new LogicError(`user with id "${id}" does not exist`)
+        return( async () => {
 
-                const { name, surname, email } = user
+            const user = await userData.retrieve(id)
+            if (!user) throw new LogicError(`user with id "${id}" does not exist`)
 
-                return { name, surname, email }
-            })
+            const { name, surname, email } = user
+
+            return { name, surname, email }
+        })()
     },
 
     searchDucks(id, query) {
@@ -63,13 +65,15 @@ const logic = {
             { name: 'query', value: query, type: 'string' }
         ])
 
-        return userData.retrieve(id)
-            .then(user => {
-                if (!user) throw new LogicError(`user with id "${id}" does not exist`)
+        return ( async () => {
+            const user = await userData.retrieve(id)
+            if (!user) throw new LogicError(`user with id "${id}" does not exist`)
 
-                return duckApi.searchDucks(query)
-            })
-            .then(ducks => ducks instanceof Array ? ducks : [])
+            const ducks = await duckApi.searchDucks(query)
+
+            return ducks instanceof Array ? ducks : []
+
+        })()
 
     },
 
