@@ -14,7 +14,7 @@ describe('user data', () => {
 
         users = db.collection('users')
 
-        logic.__col__ = users
+        userData.__col__ = users
     })
 
     const names = ['Pepito', 'Fulanito', 'Menganito']
@@ -163,5 +163,5 @@ describe('user data', () => {
         })
     })
 
-    afterAll(() => client.close(true))
+    afterAll(() => client.close())
 })
