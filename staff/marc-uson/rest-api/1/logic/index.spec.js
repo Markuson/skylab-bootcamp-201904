@@ -1,4 +1,4 @@
-const logic = require('.')
+// const logic = require('.')
 const { LogicError, RequirementError, ValueError, FormatError } = require('../common/errors')
 const userData = require('../data/user-data')
 const duckApi = require('../data/duck-api')
@@ -279,6 +279,141 @@ describe('logic', () => {
                         })
                     })
             )
+
+        })
+
+        describe('shopping cart', () => {
+            let id, duckId
+
+            describe('add and delete ducks from cart', () => {
+
+                beforeEach(() => {
+                    duckId = `${Math.random()}`
+
+                    return userData.create({ name, surname, email, password })
+                    .then(() => userData.find(user => user.email === email))
+                    .then(([user]) => id = user.id)
+                })
+
+                it('should succed adding a new duck to the shopping cart', () =>
+                    logic.addDuckToCart(id, duckId)
+                        .then(response => expect(response).toBeUndefined())
+                        .then(() => userData.retrieve(id))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(1)
+                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].items).toBe(1)
+                        })
+                )
+
+                it('should succed adding an other existing duck to the shopping cart', () =>
+                    logic.addDuckToCart(id, duckId)
+                        .then( () => logic.addDuckToCart(id, duckId))
+                        .then(response => expect(response).toBeUndefined())
+                        .then(() => userData.retrieve(id))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(1)
+                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].items).toBe(2)
+                        })
+                )
+                it('should succed deleting a duck from the shopping cart', () =>
+                    logic.addDuckToCart(id, duckId)
+                        .then(() => userData.retrieve(id))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(1)
+                            expect(cart[0].duckId).toBe(duckId)
+                            expect(cart[0].items).toBe(1)
+                            logic.deleteDuckFromCart(id, duckId)}
+                            )
+                        .then(response => expect(response).toBeUndefined())
+                        .then(() => userData.retrieve(id))
+                        .then(user => {
+                            const { cart } = user
+
+                            expect(cart).toBeDefined()
+                            expect(cart).toBeInstanceOf(Array)
+                            expect(cart).toHaveLength(0)
+                        })
+                )
+
+                it('should fail on null id on adding duck', () => {
+                    id = null
+                    expect( () => logic.addDuckToCart(id, duckId).toThrowError(RequirementError, 'id is not optional'))
+                })
+
+                it('should fail on null duckId on adding duck', () => {
+                    duckId = null
+                    expect( () => logic.addDuckToCart(id, duckId).toThrowError(RequirementError, 'duckId is not optional'))
+                })
+
+                it('should fail on null id on deleting duck', () => {
+                    id = null
+                    expect( () => logic.deleteDuckFromCart(id, duckId).toThrowError(RequirementError, 'id is not optional'))
+                })
+
+                it('should fail on null duckId on deleting duck', () => {
+                    duckId = null
+                    expect( () => logic.deleteDuckFromCart(id, duckId).toThrowError(RequirementError, 'duckId is not optional'))
+                })
+            })
+
+            describe('retrieve shopping cart', () => {
+                let id
+
+                beforeEach(() => {
+                    _cart = []
+
+                    return duckApi.searchDucks('')
+                        .then(ducks => {
+                            for (let i = 0; i < 10; i++) {
+                                const randomIndex = Math.floor(Math.random() * ducks.length)
+
+                                _cart[i] = {duckId: ducks.splice(randomIndex, 1)[0].id, items: Math.floor(Math.random() * 5)}
+                            }
+
+                            return userData.create({ email, password, name, surname, cart: _cart })
+                        })
+                        .then(() => userData.find(user => user.email === email))
+                        .then(([user]) => id = user.id)
+
+                })
+
+                it('should succes on retrieving the sopping cart', () =>
+                    logic.retrieveSoppingCart(id)
+                        .then(shoppingCart => {
+
+                            shoppingCart.forEach(({ id, title, imageUrl, price }) => {
+                                const inCart = _cart.some(item => item.duckId === id)
+
+                                expect(inCart).toBeTruthy()
+                                expect(typeof title).toBe('string')
+                                expect(title.length).toBeGreaterThan(0)
+                                expect(typeof imageUrl).toBe('string')
+                                expect(imageUrl.length).toBeGreaterThan(0)
+                                expect(typeof price).toBe('string')
+                                expect(price.length).toBeGreaterThan(0)
+                            })
+                        })
+                )
+
+                it('should fail on null id on retrieving cart', () => {
+                    id = null
+                    expect( () => logic.retrieveSoppingCart(id).toThrowError(RequirementError, 'id is not optional'))
+                })
+            })
         })
     })
 
@@ -289,7 +424,7 @@ describe('logic', () => {
             userData.create({ name, surname, email, password })
             .then(() => userData.find(user => user.email === email))
             .then(([user]) => id = user.id)
-    )
+        )
 
         describe('search ducks', () => {
             it('should succeed on correct query', () =>
