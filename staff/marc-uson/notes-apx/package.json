@@ -1,0 +1,21 @@
+{
+  "name": "notes-apx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node .",
+    "watch": "nodemon .",
+    "debug": "node debug .",
+    "test": "jest --runInBand",
+    "test:debug": "node debug ./node_modules/jest/bin/jest.js --runInBand --watchAll"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "jest": "^24.8.0",
+    "mongoose": "^5.5.10",
+    "validator": "^11.0.0"
+  }
+}
