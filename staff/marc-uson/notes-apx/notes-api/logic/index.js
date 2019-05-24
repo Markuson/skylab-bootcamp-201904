@@ -89,7 +89,8 @@ const logic = {
             try {
                 // const user = await Users.findByIdAndUpdate(author, {notes:{text: note}}, {new: true})
                 const user = await Users.findById(author)
-                user.notes.push(note)
+                debugger
+                user.notes.push(new Notes({text: note, author}))
                 await user.save()
                 return 'Message published'
             } catch (error) {
@@ -113,7 +114,7 @@ const logic = {
         })()
     },
 
-    deletePrivateNote(noteId) {
+    deletePrivateNote(author, noteId) {
         validate.arguments([
             { name: 'id', value: noteId, type: 'string', notEmpty: true }
         ])
