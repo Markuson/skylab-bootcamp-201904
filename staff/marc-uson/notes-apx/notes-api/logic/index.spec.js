@@ -236,29 +236,66 @@ describe('logic', () => {
             expect(response).toBeDefined()
             expect(typeof response).toBe('string')
             expect(response).toBe('Message published')
+
+            const allUsers = await Users.find()
+            expect(allUsers[0].notes).toBeDefined()
+            expect(typeof allUsers[0].notes).toBe('object')
+            expect(allUsers[0].notes.length).toBe(1)
+        })
+
+        it('shoul succes on adding two private notes', async () => {
+
+            const response = await logic.addPrivateNote(id, note)
+
+            expect(response).toBeDefined()
+            expect(typeof response).toBe('string')
+            expect(response).toBe('Message published')
+
+            const response2 = await logic.addPrivateNote(id, note)
+
+            expect(response2).toBeDefined()
+            expect(typeof response2).toBe('string')
+            expect(response2).toBe('Message published')
+
+            const allUsers = await Users.find()
+            expect(allUsers[0].notes).toBeDefined()
+            expect(typeof allUsers[0].notes).toBe('object')
+            expect(allUsers[0].notes.length).toBe(2)
         })
 
         it('shoul succes on deleting a public note', async () => {
 
             const newNote = await Notes.create({text: note, author: id})
 
-            const response = await logic.deletePublicNote(newNote.id)
+            let allNotes = await Notes.find()
 
+            expect(allNotes).toBeDefined
+            expect(typeof allNotes).toBe('object')
+            expect(allNotes.length).toBe(1)
+
+            const response = await logic.deletePublicNote(newNote.id)
             expect(response).toBeDefined()
             expect(typeof response).toBe('string')
             expect(response).toBe('Message deleted')
+            allNotes = await Notes.find()
+            expect(allNotes).toBeDefined
+            expect(typeof allNotes).toBe('object')
+            expect(allNotes.length).toBe(0)
         })
 
         it('shoul succes on deleting a private note', async () => {
 
-            // const note = await Notes.create({text: note, author: id})
-            
+            const user = await Users.findById(id)
+            user.notes.push(note)
+            await user.save()
+            let notes = await Users.findById(id).select('notes')
+            logic.deletePrivateNote(notes[0].id)
 
-            // const response = await logic.deletePrivateNote(note.id)
+            expect(response).toBeDefined()
+            expect(typeof response).toBe('string')
+            expect(response).toBe('Message deleted')
+            notes = await Users.findById(id).select('notes')
 
-            // expect(response).toBeDefined()
-            // expect(typeof response).toBe('string')
-            // expect(response).toBe('Message deleted')
         })
     })
 

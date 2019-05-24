@@ -57,7 +57,6 @@ const logic = {
         return (async () => {
             const user = await Users.findById(id)
             if (!user) throw new LogicError(`user with id "${id}" does not exist`)
-            debugger
             const { name, surname, email } = user
 
             return { name, surname, email }
@@ -88,9 +87,9 @@ const logic = {
 
         return (async () => {
             try {
+                // const user = await Users.findByIdAndUpdate(author, {notes:{text: note}}, {new: true})
                 const user = await Users.findById(author)
-                const newPrivateNote = await Notes.create({ text: note, author })
-                await user.notes.push(newPrivateNote)
+                user.notes.push(note)
                 await user.save()
                 return 'Message published'
             } catch (error) {
@@ -113,6 +112,23 @@ const logic = {
             }
         })()
     },
+
+    deletePrivateNote(noteId) {
+        validate.arguments([
+            { name: 'id', value: noteId, type: 'string', notEmpty: true }
+        ])
+
+        return (async () => {
+            try {
+                const user = await Users.findById(author)
+                await user.notes.findByIdAndDelete(noteId)
+                debugger
+                return 'Message deleted'
+            } catch (error) {
+                throw new Error(error)
+            }
+        })()
+    }
 }
 
 module.exports = logic
