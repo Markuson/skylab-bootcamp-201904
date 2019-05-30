@@ -3,6 +3,12 @@
 #include <ESP8266WiFi.h>
 #include <elapsedMillis.h>
 
+const char* ssid ="skylabCodersAcademy";    //SKYLAB SSID
+const char* password = "skylabRocks";       //SKYLAB password
+
+//const char* ssid ="Orange-E00C";            //bcn SSID
+//const char* password = "kTpmgGXF";          //bcn password
+
 
 //define send data interval
 elapsedMillis timeElapsed;
@@ -44,10 +50,10 @@ void loop()
     {
         HTTPClient http;
         //skylab
-        http.begin("http://192.168.0.46:5000/api/arduino1/");
+        http.begin("http://192.168.0.31:8080/api/wotcontrol/test");
 
         http.addHeader("Content-Type", "application/json");
-        int httpCode = http.POST("Testing the client");
+        int httpCode = http.POST("{\"Testing\":\"client\"}");
 
         String payload = http.getString();
         Serial.print("POST payload: ");
