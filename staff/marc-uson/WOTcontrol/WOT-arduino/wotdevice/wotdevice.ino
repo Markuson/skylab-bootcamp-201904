@@ -34,50 +34,55 @@ Servo servo3;
 
 ESP8266WebServer server(80);
 
-void setup() {
- //inicializa los pines de entrada y salida
- pinMode (DOut1,OUTPUT);
- pinMode (DOut2,OUTPUT);
- pinMode (motor1,OUTPUT);
- pinMode (motor2,OUTPUT);
- pinMode (Din1,INPUT);
- pinMode (Din2,INPUT);
- //inicializa el puerto serie
- Serial.begin(115200);
- delay(10);
+void setup()
+{
+   //inicializa los pines de entrada y salida
+   pinMode(DOut1, OUTPUT);
+   pinMode(DOut2, OUTPUT);
+   pinMode(motor1, OUTPUT);
+   pinMode(motor2, OUTPUT);
+   pinMode(Din1, INPUT);
+   pinMode(Din2, INPUT);
+   servo1.attach(servo1Pin);
+   servo2.attach(servo2Pin);
+   servo3.attach(servo3Pin);
+   //inicializa el puerto serie
+   Serial.begin(115200);
+   delay(10);
 
- //Inicializa el módulo wifi
- WiFi.mode(WIFI_STA); //Establece el módulo como cliente wifi
- WiFi.disconnect(); //Se desconecta de cualquier WiFi conectado previamente
- Serial.println();
- //conecta con la red wifi
- Serial.print("Connecting to ");
- Serial.println(ssid);
- WiFi.begin(ssid, password);
- while (WiFi.status() != WL_CONNECTED) {   // Espera por una conexión WiFi
-    delay(500);
-    Serial.print(".");
- }
- Serial.println("");
- Serial.println("WiFi connected");
- Serial.print("IP address: ");
- Serial.println(WiFi.localIP());
+   //Inicializa el módulo wifi
+   WiFi.mode(WIFI_STA); //Establece el módulo como cliente wifi
+   WiFi.disconnect();   //Se desconecta de cualquier WiFi conectado previamente
+   Serial.println();
+   //conecta con la red wifi
+   Serial.print("Connecting to ");
+   Serial.println(ssid);
+   WiFi.begin(ssid, password);
+   while (WiFi.status() != WL_CONNECTED)
+   { // Espera por una conexión WiFi
+      delay(500);
+      Serial.print(".");
+   }
+   Serial.println("");
+   Serial.println("WiFi connected");
+   Serial.print("IP address: ");
+   Serial.println(WiFi.localIP());
 
- //definimos los paths
- server.on("/don",DOut_on);
- server.on("/doff",DOut_off);
- server.on("/servo1",handleServo1);
- server.on("/servo2",handleServo2);
- server.on("/servo3",handleServo3);
- server.on("/motor1",handleMotor1);
- server.on("/motor2",handleMotor2);
- server.on("/new",writeId);
-  server.on("/info",info);
- server.on("/active",activateDevice);
- server.onNotFound(no_encontrado);
- //inicializa el servidor web
- server.begin();
- Serial.println("Servidor HTTP activo");
+   //definimos los paths
+   server.on("/don", DOut_on);
+   server.on("/doff", DOut_off);
+   server.on("/servo1", handleServo1);
+   server.on("/servo2", handleServo2);
+   server.on("/servo3", handleServo3);
+   server.on("/motor1", handleMotor1);
+   server.on("/motor2", handleMotor2);
+   server.on("/new", writeId);
+   server.on("/info", info);
+   server.on("/active", activateDevice);
+   server.onNotFound(no_encontrado);
+   //inicializa el servidor web
+   server.begin();
+   Serial.println("Servidor HTTP activo");
 }
 
 void loop()

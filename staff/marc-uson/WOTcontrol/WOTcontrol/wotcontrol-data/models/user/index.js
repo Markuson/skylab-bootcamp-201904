@@ -1,6 +1,6 @@
 const { Schema } = require ('mongoose')
 const { isEmail } = require ('validator')
-const deviceSchema = require ('../device')
+const { deviceSchema } = require('../device')
 
 
 const userSchema = new Schema({
