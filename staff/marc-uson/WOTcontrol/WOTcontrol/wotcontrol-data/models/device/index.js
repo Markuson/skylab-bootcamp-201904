@@ -9,10 +9,11 @@ const inputSchema = new Schema({
         required: true
     },
     value: {
-        type: Number
+        type: String
     },
     direction:{
-        type: String,
+        type: Number,
+        enum: [1,2],
         required: true
     }
 })
@@ -50,4 +51,4 @@ const deviceSchema = new Schema({
 
 })
 
-module.exports = deviceSchema
+module.exports = { deviceSchema, inputSchema, outputSchema }
