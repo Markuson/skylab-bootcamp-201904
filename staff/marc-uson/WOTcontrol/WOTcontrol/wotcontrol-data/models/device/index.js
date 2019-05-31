@@ -9,7 +9,8 @@ const inputSchema = new Schema({
         required: true
     },
     value: {
-        type: String
+        type: Number,
+        default:0
     },
     direction:{
         type: Number,
@@ -21,14 +22,16 @@ const inputSchema = new Schema({
 const outputSchema = new Schema({
     type: {
         type: String,
-        enum:['digital', 'analog', 'servo', 'motor'],
+        enum:['digital', 'servo', 'motor'],
         required: true
     },
     value: {
-        type: Number
+        type: Number,
+        default: 0
     },
     direction:{
-        type: String,
+        type: Number,
+        enum: [1,2,3],
         required: true
     }
 })

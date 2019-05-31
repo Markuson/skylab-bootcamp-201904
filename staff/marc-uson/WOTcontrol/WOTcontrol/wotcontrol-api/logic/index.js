@@ -1,6 +1,7 @@
 const validate = require('wotcontrol-validate')
 const { LogicError } = require('wotcontrol-errors')
 const { models } = require('wotcontrol-data')
+const call = require('wotcontrol-call')
 
 const { Users, Devices, Inputs, Outputs } = models
 
@@ -138,7 +139,7 @@ const logic = {
                 if (users.length > 0 ) throw new LogicError(`A device with ip ${deviceIp} is already in your collection`)
 
                 user.devices.push(new Devices({ name: deviceName, ip: deviceIp, port: devicePort}))
-                await user.save()
+                await Users.findByIdAndUpdate(id, user)
 
             } catch (error) {
                 throw new LogicError(error.message)
@@ -164,7 +165,7 @@ const logic = {
                 const devices = user.devices.filter(({ name }) => name != deviceName)
                 user.devices = devices
 
-                await user.save()
+                await Users.findByIdAndUpdate(id, user)
 
             } catch (error) {
                 throw new LogicError(error.message)
@@ -188,19 +189,23 @@ const logic = {
         return(async () => {
 
             try {
-
                 const user = await Users.findById(id)
                 if (!user) throw new LogicError(`user with id: ${id} does not exist`)
 
-                let users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}]})
-                if (users.length == 0 ) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
 
-                const types = users.devices.inputs.filter(({ type:_type }) => _type == type)
-                if((types.length == 1 && type == 'analog')||(types.length == 2 && type == 'digital'))
-                 throw new LogicError(`The device ${deviceName} could not have more ${type} inputs`)
+                const _users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }, { 'devices.inputs.type': type }] })
+                if (_users.length > 0) {
+                    let inputs = _users[0].devices[0].inputs
+                    filteredInputs = inputs.filter(element => element.type == type)
 
-                user.devices.inputs.push(new Inputs({ type, direction }))
-                await user.save()
+                    if ((filteredInputs.length == 1 && type == 'analog') || (filteredInputs.length == 2 && type == 'digital'))
+                        throw new LogicError(`The device ${deviceName} could not have more ${type} inputs`)
+                }
+                users[0].devices[0].inputs.push(new Inputs({ type, direction }))
+
+                await Users.findByIdAndUpdate(id, users[0])
 
             } catch (error) {
                 throw new LogicError(error.message)
@@ -209,31 +214,257 @@ const logic = {
     },
 
     deleteInput(id, deviceName, type, direction){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'type', value: type, type: 'string', notEmpty: true },
+            { name: 'direction', value: direction, type: 'number', notEmpty: true }
+        ])
 
+        if(type != 'digital' && type != 'analog') throw new LogicError(`${type} is not a valid input type`)
+        if(type == 'digital' && (direction < 1 || direction > 2)) throw new LogicError(`${direction} is not a valid direction for a digital input`)
+        if(type == 'analog' && (direction != 1)) throw new LogicError(`${direction} is not a valid direction for a analog input`)
+
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}]})
+                if (users.length == 0 ) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                let _users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}, {'devices.inputs.type': type}]})
+                if (_users.length == 0) throw new LogicError(`The device ${deviceName} don't have any ${type} input`)
+
+                _users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}, {'devices.inputs.type': type}, {'devices.inputs.direction': direction} ]})
+                if (_users.length == 0) throw new LogicError(`The device ${deviceName} don't have any ${type} input asigned to ${direction} direction`)
+
+                const device = user.devices.filter(({ name }) => name == deviceName)
+                const inputs = device[0].inputs.filter(({ type: _type, direction: _direction }) => (_type != type)||((_type == type)&&(_direction != direction)) )
+                const deviceIndex = user.devices.findIndex(({ name }) => name == deviceName)
+                user.devices[deviceIndex].inputs = inputs
+                await Users.findByIdAndUpdate(id, user)
+
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
     addOutput(id, deviceName, type, direction){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'type', value: type, type: 'string', notEmpty: true },
+            { name: 'direction', value: direction, type: 'number', notEmpty: true }
+        ])
 
+        if(type != 'digital' && type != 'motor' && type != 'servo') throw new LogicError(`${type} is not a valid output type`)
+        if(type == 'digital' && (direction < 1 || direction > 2)) throw new LogicError(`${direction} is not a valid direction for a digital output`)
+        if(type == 'motor' && (direction < 1 || direction > 2)) throw new LogicError(`${direction} is not a valid direction for a motor output`)
+        if(type == 'servo' && (direction < 1 || direction > 3)) throw new LogicError(`${direction} is not a valid direction for a servo output`)
+
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const _users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }, { 'devices.outputs.type': type }] })
+                if (_users.length > 0) {
+                    let outputs = _users[0].devices[0].outputs
+                    filteredOutputs = outputs.filter(element => element.type == type)
+
+                    if ((filteredOutputs.length == 3 && type == 'servo') ||(filteredOutputs.length == 2 && type == 'motor') || (filteredOutputs.length == 2 && type == 'digital'))
+                        throw new LogicError(`The device ${deviceName} could not have more ${type} outputs`)
+                }
+                users[0].devices[0].outputs.push(new Outputs({ type, direction }))
+
+                await Users.findByIdAndUpdate(id, users[0])
+
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
     deleteOutput(id, deviceName, type, direction){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'type', value: type, type: 'string', notEmpty: true },
+            { name: 'direction', value: direction, type: 'number', notEmpty: true }
+        ])
 
+        if(type != 'digital' && type != 'motor' && type != 'servo') throw new LogicError(`${type} is not a valid output type`)
+        if(type == 'digital' && (direction < 1 || direction > 2)) throw new LogicError(`${direction} is not a valid direction for a digital output`)
+        if(type == 'motor' && (direction < 1 || direction > 2)) throw new LogicError(`${direction} is not a valid direction for a motor output`)
+        if(type == 'servo' && (direction < 1 || direction > 3)) throw new LogicError(`${direction} is not a valid direction for a servo output`)
+
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}]})
+                if (users.length == 0 ) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                let _users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}, {'devices.outputs.type': type}]})
+                if (_users.length == 0) throw new LogicError(`The device ${deviceName} don't have any ${type} output`)
+
+                _users = await Users.find({$and:[{_id: id}, {'devices.name': deviceName}, {'devices.outputs.type': type}, {'devices.outputs.direction': direction} ]})
+                if (_users.length == 0) throw new LogicError(`The device ${deviceName} don't have any ${type} output asigned to ${direction} direction`)
+
+                const device = user.devices.filter(({ name }) => name == deviceName)
+                const outputs = device[0].outputs.filter(({ type: _type, direction: _direction }) => (_type != type)||((_type == type)&&(_direction != direction)) )
+                const deviceIndex = user.devices.findIndex(({ name }) => name == deviceName)
+                user.devices[deviceIndex].outputs = outputs
+                await Users.findByIdAndUpdate(id, user)
+
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
-    retrieveDeviceInfo(id, deviceId){
+    retrieveDevice(id, deviceName){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true }
+        ])
 
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({name}) => name == deviceName)
+
+                return device[0]
+
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
-    activateDevice(id, deviceId, timeInterval){
+    activateDevice(id, deviceName, timeInterval){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'timeInterval', value: timeInterval, type: 'number', notEmpty: true }
+        ])
 
+        if(timeInterval < 1000) throw new LogicError(`time interval ${timeInterval} is too low. must be at least 1000`)
+
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({name}) => name == deviceName)
+
+                const url = `http://${device[0].ip}:${device[0].port}/active?status=on&interval=${timeInterval}`
+
+                const response = await call(url)
+
+                return response
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
-    changeDeviceId(id, deviceId){
+    changeDeviceId(id, deviceName, newDeviceName){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'newDeviceName', value: newDeviceName, type: 'string', notEmpty: true }
+        ])
 
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({name}) => name == deviceName)
+
+                const url = `http://${device[0].ip}:${device[0].port}/new?deviceid=${newDeviceName}`
+
+                const response = await call(url)
+
+                if(response.status == 'OK'){
+                    device[0].name = response.name
+                    const index = users[0].devices.findIndex(({name}) => name == deviceName)
+                    users[0].devices[index] = device[0]
+                    await Users.findByIdAndUpdate(id, users[0])
+                }
+                return response
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
-    toggleDigitalOutput(id, deviceId, pinNumber){
+    toggleDigitalOutput(id, deviceName, pinNumber){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'pinNumber', value: pinNumber, type: 'number', notEmpty: true }
+        ])
+        let toggleOnOff='off'
 
+        if((pinNumber > 2)||(pinNumber < 0)) throw new LogicError(`${pinNumber} is not a valid digital pinNumber`)
+
+        return(async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({name}) => name == deviceName)
+
+                const outputIndex = device[0].outputs.findIndex(({direction}) => direction == pinNumber)
+
+                if(outputIndex == -1) throw new LogicError(`no output declared with pin number ${pinNumber}`)
+
+                if(device[0].outputs[outputIndex].value == 0) toggleOnOff = 'on'
+                else toggleOnOff = 'off'
+
+                const url = `http://${device[0].ip}:${device[0].port}/d${toggleOnOff}?pin=${pinNumber}`
+
+                const response = await call(url)
+
+                const deviceIndex = user.devices.findIndex(({ name }) => name == deviceName)
+                response.status == 'ON' ? user.devices[deviceIndex].outputs[outputIndex].value = 1 : user.devices[deviceIndex].outputs[outputIndex].value = 0
+
+                await Users.findByIdAndUpdate(id, user)
+
+                return response
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
     setServoPosition(id, deviceId, servoNumber, angle){
