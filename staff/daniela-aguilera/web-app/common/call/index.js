@@ -20,7 +20,7 @@ function call(url, options = {}) {
         { name: 'headers', value: headers, type: 'object', optional: true },
         { name: 'body', value: body, type: 'string', notEmpty: true, optional: true }
     ])
-
+    debugger
     validate.url(url)
 
     return fetch(url, {
@@ -28,7 +28,13 @@ function call(url, options = {}) {
         headers,
         body
     })
+        .then(response => {
+            debugger
+            if(!response.ok) throw error
+            return response
+        })
         .catch(error => {
+            debugger
             if (error.name === 'FetchError') throw new ConnectionError('cannot connect')
             else throw error
         })

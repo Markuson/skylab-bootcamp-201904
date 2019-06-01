@@ -2,7 +2,7 @@ const validate = require('../../common/validate')
 const call = require('../../common/call')
 
 const userApi = {
-    __url__: 'https://skylabcoders.herokuapp.com/api',
+    __url__: 'https://skylabcoders.herokuapp.com/api--',
 
     create(username, password, data) {
         validate.arguments([

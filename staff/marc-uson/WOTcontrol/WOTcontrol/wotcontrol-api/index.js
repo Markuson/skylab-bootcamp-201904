@@ -4,17 +4,24 @@ const express = require('express')
 const package = require('./package.json')
 const routes = require('./routes')
 const cors = require('./routes/cors')
+const { mongoose } = require('wotcontrol-data')
 
-const { env: { PORT }, argv: [, , port = PORT || 8080], } = process
+const { env: { PORT, MONGO_URL: url }, argv: [, , port = PORT || 8080], } = process;
 
-const app = express()
+(async () => {
+    await mongoose.connect(url, { useNewUrlParser: true })
 
-app.use(cors)
+    // express
 
-app.use('/api', routes)
+    const app = express()
 
-app.use(function (req, res, next) {
-    res.status(404).json({ error: 'Not found.'})
-})
+    app.use(cors)
 
-app.listen(port, () => console.log(`${package.name} ${package.version} up on port ${port}`))
+    app.use('/api', routes)
+
+    app.use(function (req, res, next) {
+        res.status(404).json({ error: 'Not found.' })
+    })
+
+    app.listen(port, () => console.log(`${package.name} ${package.version} up on port ${port}`))
+})()
