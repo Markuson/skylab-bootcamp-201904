@@ -22,6 +22,7 @@ describe('logic', () => {
     let deviceName
     let deviceIp
     const devicePort = 80
+    let timeInterval = 5000
 
 
     beforeEach(async () => {
@@ -617,13 +618,13 @@ describe('logic', () => {
             it('should fail on empty devicePort', () => {
                 const devicePort = ''
 
-                expect(() => logic.addDevice(id, deviceName, deviceIp, devicePort).to.throw(ValueError, 'devicePort is empty'))
+                expect(() => logic.addDevice(id, deviceName, deviceIp, devicePort).to.throw(ValueError, `devicePort is empty`))
             })
 
             it('should fail on blank devicePort', () => {
                 const devicePort = ' \t    \n'
 
-                expect(() => logic.addDevice(id, deviceName, deviceIp, devicePort).to.throw(ValueError, 'devicePort is empty'))
+                expect(() => logic.addDevice(id, deviceName, deviceIp, devicePort).to.throw(ValueError, `devicePort is empty`))
             })
         })
 
@@ -742,44 +743,2520 @@ describe('logic', () => {
 
         })
 
-        describe('manage inputs', () =>{
+        describe('manage WOTdevice inputs', () =>{
+            let inputType = ''
+            let inputDirection = 0
 
+            describe('add inputs', () => {
+                beforeEach(async() =>{
+                    email = `marcusontest-${Math.random()}@gmail.com`
+                    deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                    deviceIp = `192.168.${String(Math.floor(Math.random()*100))}.${String(Math.floor(Math.random()*255))}`
+
+                    await Users.create({ name, surname, email, password, isAdmin })
+                    user = await Users.findOne({email})
+                    id = user.id
+                    user.devices.push(new Devices({ name: deviceName, ip: deviceIp, port: devicePort}))
+                    await user.save()
+                })
+
+                it('should succed adding a new WOTdevice digital input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].inputs).to.exist
+                    expect(user.devices[0].inputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs).to.have.length(1)
+                    expect(user.devices[0].inputs[0].type).to.equal(inputType)
+                    expect(user.devices[0].inputs[0].direction).to.equal(inputDirection)
+                    expect(user.devices[0].inputs[0].values).to.be.instanceOf(Array)
+                })
+
+                it('should succed adding two new WOTdevice digital input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _inputDirection = 2
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    const response = await logic.addInput(id, deviceName, inputType, _inputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].inputs).to.exist
+                    expect(user.devices[0].inputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs).to.have.length(2)
+                    expect(user.devices[0].inputs[0].type).to.equal(inputType)
+                    expect(user.devices[0].inputs[0].direction).to.equal(inputDirection)
+                    expect(user.devices[0].inputs[0].values).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs[1].type).to.equal(inputType)
+                    expect(user.devices[0].inputs[1].direction).to.equal(_inputDirection)
+                    expect(user.devices[0].inputs[1].values).to.be.instanceOf(Array)
+
+                })
+
+                it('should succed adding a new WOTdevice analog input', async()=>{
+                    inputType = 'analog'
+                    inputDirection = 1
+                    const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].inputs).to.exist
+                    expect(user.devices[0].inputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs).to.have.length(1)
+                    expect(user.devices[0].inputs[0].type).to.equal(inputType)
+                    expect(user.devices[0].inputs[0].direction).to.equal(inputDirection)
+                    expect(user.devices[0].inputs[0].values).to.be.instanceOf(Array)
+                })
+
+                it('should fail adding a input to a unexisting user', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _id = 'unexistingId'
+
+                    try {
+                        await logic.addInput(_id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                    }
+                })
+
+                it('should fail adding a input to a unexisting WOTdevice', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _deviceName = 'wrongName'
+
+                    try {
+                        await logic.addInput(id, _deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`A device named ${_deviceName} does not exist in your collection`)
+                    }
+                })
+
+                it('should fail adding three WOTdevice digital input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _inputDirection = 2
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    await logic.addInput(id, deviceName, inputType, _inputDirection)
+
+                    try {
+                        const response = await logic.addInput(id, deviceName, inputType, _inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`The device ${deviceName} could not have more ${inputType} inputs`)
+                    }
+                })
+
+                it('should fail adding two WOTdevice analog input', async()=>{
+                    inputType = 'analog'
+                    inputDirection = 1
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+
+                    try {
+                        const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`The device ${deviceName} could not have more ${inputType} inputs`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice digital input with wrong direction', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 3
+
+                    try {
+                        const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${inputDirection} is not a valid direction for a ${inputType} input`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice analog input with wrong direction', async()=>{
+                    inputType = 'analog'
+                    inputDirection = 2
+
+                    try {
+                        const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`${inputDirection} is not a valid direction for a ${inputType} input`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice with wrong type', async()=>{
+                    inputType = 'invalidType'
+                    inputDirection = 2
+
+                    try {
+                        const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${inputType} is not a valid input type`)
+                    }
+
+                })
+
+                it('should fail on undefined device id', () => {
+                    const id = undefined
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on null id', () => {
+                    const id = null
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on empty id', () => {
+                    const id = ''
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'id is empty'))
+                })
+
+                it('should fail on blank id', () => {
+                    const id = ' \t    \n'
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined deviceName', () => {
+                    const deviceName = undefined
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on null deviceName', () => {
+                    const deviceName = null
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on empty deviceName', () => {
+                    const deviceName = ''
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on blank deviceName', () => {
+                    const deviceName = ' \t    \n'
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined inputType', () => {
+                    const inputType = undefined
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputType is not optional`))
+                })
+
+                it('should fail on null inputType', () => {
+                    const inputType = null
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputType is not optional`))
+                })
+
+                it('should fail on empty inputType', () => {
+                    const inputType = ''
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputType is empty'))
+                })
+
+                it('should fail on blank inputType', () => {
+                    const inputType = ' \t    \n'
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputType is empty'))
+                })
+
+                it('should fail on undefined inputDirection', () => {
+                    const inputDirection = undefined
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputDirection is not optional`))
+                })
+
+                it('should fail on null inputDirection', () => {
+                    const inputDirection = null
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputDirection is not optional`))
+                })
+
+                it('should fail on empty inputDirection', () => {
+                    const inputDirection = ''
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputDirection is empty'))
+                })
+
+                it('should fail on blank inputDirection', () => {
+                    const inputDirection = ' \t    \n'
+
+                    expect(() => logic.addInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputDirection is empty'))
+                })
+            })
+
+            describe('delete inputs', () => {
+                beforeEach(async() =>{
+                    email = `marcusontest-${Math.random()}@gmail.com`
+                    deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                    deviceIp = `192.168.${String(Math.floor(Math.random()*100))}.${String(Math.floor(Math.random()*255))}`
+
+                    await Users.create({ name, surname, email, password, isAdmin })
+                    user = await Users.findOne({email})
+                    id = user.id
+                    user.devices.push(new Devices({ name: deviceName, ip: deviceIp, port: devicePort}))
+                    await user.save()
+                })
+
+                it('should succed deleting a WOTdevice digital input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    inputDirection = 2
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    const response = await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                    inputType = 'analog'
+                    inputDirection = 1
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].inputs).to.exist
+                    expect(user.devices[0].inputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs).to.have.length(2)
+                })
+
+                it('should succed deleting two WOTdevice digital input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _inputDirection = 2
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    await logic.addInput(id, deviceName, inputType, _inputDirection)
+
+                    await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                    const response = await logic.deleteInput(id, deviceName, inputType, _inputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].inputs).to.exist
+                    expect(user.devices[0].inputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs).to.have.length(0)
+
+                })
+
+                it('should succed deleting a WOTdevice analog input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    inputType = 'analog'
+                    inputDirection = 1
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+                    const response = await logic.deleteInput(id, deviceName, inputType, inputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].inputs).to.exist
+                    expect(user.devices[0].inputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].inputs).to.have.length(1)
+                })
+
+                it('should fail deleting a input to a unexisting user', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _id = 'unexistingId'
+
+                    try {
+                        await logic.deleteInput(_id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                    }
+                })
+
+                it('should fail deleting a input to a unexisting WOTdevice', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _deviceName = 'wrongName'
+
+                    try {
+                        await logic.deleteInput(id, _deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`A device named ${_deviceName} does not exist in your collection`)
+                    }
+                })
+
+                it('should fail deleting unexisting WOTdevice digital input', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+
+                    try {
+                        await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`The device ${deviceName} don't have any ${inputType} input`)
+                    }
+                })
+
+                it('should fail deleting WOTdevice digital input in a undefined input direction', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 1
+                    let _inputDirection = 2
+
+                    await logic.addInput(id, deviceName, inputType, inputDirection)
+
+                    try {
+                        await logic.deleteInput(id, deviceName, inputType, _inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`The device ${deviceName} don't have any ${inputType} input asigned to ${_inputDirection} direction`)
+                    }
+                })
+
+                it('should fail deleting unexisting WOTdevice analog input', async()=>{
+                    inputType = 'analog'
+                    inputDirection = 1
+
+                    try {
+                        await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`The device ${deviceName} don't have any ${inputType} input`)
+                    }
+                })
+
+                it('should fail deleting a WOTdevice digital input with wrong direction', async()=>{
+                    inputType = 'digital'
+                    inputDirection = 3
+
+                    try {
+                        await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${inputDirection} is not a valid direction for a ${inputType} input`)
+                    }
+                })
+
+                it('should fail deleting a WOTdevice analog input with wrong direction', async()=>{
+                    inputType = 'analog'
+                    inputDirection = 2
+
+                    try {
+                        await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`${inputDirection} is not a valid direction for a ${inputType} input`)
+                    }
+                })
+
+                it('should fail deleting a WOTdevice with wrong type', async()=>{
+                    inputType = 'invalidType'
+                    inputDirection = 2
+
+                    try {
+                        await logic.deleteInput(id, deviceName, inputType, inputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${inputType} is not a valid input type`)
+                    }
+                })
+
+                it('should fail on undefined device id', () => {
+                    const id = undefined
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on null id', () => {
+                    const id = null
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on empty id', () => {
+                    const id = ''
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'id is empty'))
+                })
+
+                it('should fail on blank id', () => {
+                    const id = ' \t    \n'
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined deviceName', () => {
+                    const deviceName = undefined
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on null deviceName', () => {
+                    const deviceName = null
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on empty deviceName', () => {
+                    const deviceName = ''
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on blank deviceName', () => {
+                    const deviceName = ' \t    \n'
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined inputType', () => {
+                    const inputType = undefined
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputType is not optional`))
+                })
+
+                it('should fail on null inputType', () => {
+                    const inputType = null
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputType is not optional`))
+                })
+
+                it('should fail on empty inputType', () => {
+                    const inputType = ''
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputType is empty'))
+                })
+
+                it('should fail on blank inputType', () => {
+                    const inputType = ' \t    \n'
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputType is empty'))
+                })
+
+                it('should fail on undefined inputDirection', () => {
+                    const inputDirection = undefined
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputDirection is not optional`))
+                })
+
+                it('should fail on null inputDirection', () => {
+                    const inputDirection = null
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `inputDirection is not optional`))
+                })
+
+                it('should fail on empty inputDirection', () => {
+                    const inputDirection = ''
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputDirection is empty'))
+                })
+
+                it('should fail on blank inputDirection', () => {
+                    const inputDirection = ' \t    \n'
+
+                    expect(() => logic.deleteInput(id, deviceName, inputType, inputDirection).to.throw(ValueError, 'inputDirection is empty'))
+                })
+            })
+        })
+
+        describe('manage WOTdevice outputs', () =>{
+            let outputType = ''
+            let outputDirection = 0
+
+            describe('add outputs', () => {
+                beforeEach(async() =>{
+                    email = `marcusontest-${Math.random()}@gmail.com`
+                    deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                    deviceIp = `192.168.${String(Math.floor(Math.random()*100))}.${String(Math.floor(Math.random()*255))}`
+
+                    await Users.create({ name, surname, email, password, isAdmin })
+                    user = await Users.findOne({email})
+                    id = user.id
+                    user.devices.push(new Devices({ name: deviceName, ip: deviceIp, port: devicePort}))
+                    await user.save()
+                })
+
+                it('should succed adding a new WOTdevice digital output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(1)
+                    expect(user.devices[0].outputs[0].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[0].direction).to.equal(outputDirection)
+                    expect(user.devices[0].outputs[0].value).to.equal(0)
+                })
+
+                it('should succed adding two new WOTdevice digital output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    const response = await logic.addOutput(id, deviceName, outputType, _outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(2)
+                    expect(user.devices[0].outputs[0].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[0].direction).to.equal(outputDirection)
+                    expect(user.devices[0].outputs[0].value).to.equal(0)
+                    expect(user.devices[0].outputs[1].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[1].direction).to.equal(_outputDirection)
+                    expect(user.devices[0].outputs[1].value).to.equal(0)
+
+                })
+
+                it('should succed adding a new WOTdevice motor output', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 1
+                    const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(1)
+                    expect(user.devices[0].outputs[0].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[0].direction).to.equal(outputDirection)
+                    expect(user.devices[0].outputs[0].value).to.equal(0)
+                })
+
+                it('should succed adding two WOTdevice motor output', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 1
+                    let _outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    const response = await logic.addOutput(id, deviceName, outputType, _outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(2)
+                    expect(user.devices[0].outputs[0].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[0].direction).to.equal(outputDirection)
+                    expect(user.devices[0].outputs[0].value).to.equal(0)
+                })
+
+                it('should succed adding a new WOTdevice motor output', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 1
+                    const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(1)
+                    expect(user.devices[0].outputs[0].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[0].direction).to.equal(outputDirection)
+                    expect(user.devices[0].outputs[0].value).to.equal(0)
+                })
+
+                it('should succed adding two WOTdevice motor output', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 1
+                    let _outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    const response = await logic.addOutput(id, deviceName, outputType, _outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(2)
+                    expect(user.devices[0].outputs[0].type).to.equal(outputType)
+                    expect(user.devices[0].outputs[0].direction).to.equal(outputDirection)
+                    expect(user.devices[0].outputs[0].value).to.equal(0)
+                })
+
+                it('should fail adding a output to a unexisting user', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _id = 'unexistingId'
+
+                    try {
+                        await logic.addInput(_id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                    }
+                })
+
+                it('should fail adding a output to a unexisting WOTdevice', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _deviceName = 'wrongName'
+
+                    try {
+                        await logic.addInput(id, _deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`A device named ${_deviceName} does not exist in your collection`)
+                    }
+                })
+
+                it('should fail adding three WOTdevice digital output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    await logic.addOutput(id, deviceName, outputType, _outputDirection)
+
+                    try {
+                        const response = await logic.addOutput(id, deviceName, outputType, _outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`The device ${deviceName} could not have more ${outputType} outputs`)
+                    }
+                })
+
+                it('should fail adding three WOTdevice motor output', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 1
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    let _outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, _outputDirection)
+
+                    try {
+                        const response = await logic.addOutput(id, deviceName, outputType, _outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`The device ${deviceName} could not have more ${outputType} outputs`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice digital output with wrong direction', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 3
+
+                    try {
+                        const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${outputDirection} is not a valid direction for a ${outputType} output`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice motor output with wrong direction', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 3
+
+                    try {
+                        const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`${outputDirection} is not a valid direction for a ${outputType} output`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice motor output with wrong direction', async()=>{
+                    outputType = 'servo'
+                    outputDirection = 4
+
+                    try {
+                        const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`${outputDirection} is not a valid direction for a ${outputType} output`)
+                    }
+                })
+
+                it('should fail adding a WOTdevice with wrong type', async()=>{
+                    outputType = 'invalidType'
+                    outputDirection = 2
+
+                    try {
+                        const response = await logic.addOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${outputType} is not a valid output type`)
+                    }
+
+                })
+
+                it('should fail on undefined device id', () => {
+                    const id = undefined
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, inputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on null id', () => {
+                    const id = null
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on empty id', () => {
+                    const id = ''
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(ValueError, 'id is empty'))
+                })
+
+                it('should fail on blank id', () => {
+                    const id = ' \t    \n'
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined deviceName', () => {
+                    const deviceName = undefined
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on null deviceName', () => {
+                    const deviceName = null
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on empty deviceName', () => {
+                    const deviceName = ''
+
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on blank deviceName', () => {
+                    const deviceName = ' \t    \n'
+                    expect(() => logic.addOutput(id, deviceName, inputType, outputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined outputType', () => {
+                    const outputType = undefined
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputType is not optional`))
+                })
+
+                it('should fail on null outputType', () => {
+                    const outputType = null
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputType is not optional`))
+                })
+
+                it('should fail on empty outputType', () => {
+                    const outputType = ''
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputType is empty'))
+                })
+
+                it('should fail on blank outputType', () => {
+                    const outputType = ' \t    \n'
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputType is empty'))
+                })
+
+                it('should fail on undefined outputDirection', () => {
+                    const outputDirection = undefined
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputDirection is not optional`))
+                })
+
+                it('should fail on null outputDirection', () => {
+                    const outputDirection = null
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputDirection is not optional`))
+                })
+
+                it('should fail on empty outputDirection', () => {
+                    const outputDirection = ''
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputDirection is empty'))
+                })
+
+                it('should fail on blank outputDirection', () => {
+                    const outputDirection = ' \t    \n'
+
+                    expect(() => logic.addOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputDirection is empty'))
+                })
+            })
+
+            describe('delete outputs', () => {
+                beforeEach(async() =>{
+                    email = `marcusontest-${Math.random()}@gmail.com`
+                    deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                    deviceIp = `192.168.${String(Math.floor(Math.random()*100))}.${String(Math.floor(Math.random()*255))}`
+
+                    await Users.create({ name, surname, email, password, isAdmin })
+                    user = await Users.findOne({email})
+                    id = user.id
+                    user.devices.push(new Devices({ name: deviceName, ip: deviceIp, port: devicePort}))
+                    await user.save()
+                })
+
+                it('should succed deleting a WOTdevice digital output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    const response = await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                    outputType = 'motor'
+                    outputDirection = 1
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(2)
+                })
+
+                it('should succed deleting two WOTdevice digital output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _outputDirection = 2
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    await logic.addOutput(id, deviceName, outputType, _outputDirection)
+
+                    await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                    const response = await logic.deleteOutput(id, deviceName, outputType, _outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(0)
+
+                })
+
+                it('should succed deleting a WOTdevice analog output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    outputType = 'servo'
+                    outputDirection = 1
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+                    const response = await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+
+                    expect(response).to.not.exist
+                    const user = await Users.findOne({$and:[{_id: id}, {'devices.name': deviceName}]})
+
+                    expect(user.devices[0].name).to.equal(deviceName)
+                    expect(user.devices[0].outputs).to.exist
+                    expect(user.devices[0].outputs).to.be.instanceOf(Array)
+                    expect(user.devices[0].outputs).to.have.length(1)
+                })
+
+                it('should fail deleting a output to a unexisting user', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _id = 'unexistingId'
+
+                    try {
+                        await logic.deleteOutput(_id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                    }
+                })
+
+                it('should fail deleting a output to a unexisting WOTdevice', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _deviceName = 'wrongName'
+
+                    try {
+                        await logic.deleteOutput(id, _deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`A device named ${_deviceName} does not exist in your collection`)
+                    }
+                })
+
+                it('should fail deleting unexisting WOTdevice digital output', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+
+                    try {
+                        await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`The device ${deviceName} don't have any ${outputType} output`)
+                    }
+                })
+
+                it('should fail deleting WOTdevice digital input in a undefined output direction', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 1
+                    let _outputDirection = 2
+
+                    await logic.addOutput(id, deviceName, outputType, outputDirection)
+
+                    try {
+                        await logic.deleteOutput(id, deviceName, outputType, _outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`The device ${deviceName} don't have any ${outputType} output asigned to ${_outputDirection} direction`)
+                    }
+                })
+
+                it('should fail deleting unexisting WOTdevice motor output', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 1
+
+                    try {
+                        await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`The device ${deviceName} don't have any ${outputType} output`)
+                    }
+                })
+
+                it('should fail deleting a WOTdevice digital output with wrong direction', async()=>{
+                    outputType = 'digital'
+                    outputDirection = 3
+
+                    try {
+                        await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${outputDirection} is not a valid direction for a ${outputType} output`)
+                    }
+                })
+
+                it('should fail deleting a WOTdevice motor output with wrong direction', async()=>{
+                    outputType = 'motor'
+                    outputDirection = 4
+
+                    try {
+                        await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+                        expect(error.message).to.equal(`${outputDirection} is not a valid direction for a ${outputType} output`)
+                    }
+                })
+
+                it('should fail deleting a WOTdevice with wrong type', async()=>{
+                    outputType = 'invalidType'
+                    outputDirection = 2
+
+                    try {
+                        await logic.deleteOutput(id, deviceName, outputType, outputDirection)
+                        throw Error('should not reach this point')
+                    } catch (error) {
+                        expect(error).to.exist
+                        expect(error).to.be.an.instanceOf(LogicError)
+
+                        expect(error.message).to.equal(`${outputType} is not a valid output type`)
+                    }
+                })
+
+                it('should fail on undefined device id', () => {
+                    const id = undefined
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on null id', () => {
+                    const id = null
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `id is not optional`))
+                })
+
+                it('should fail on empty id', () => {
+                    const id = ''
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'id is empty'))
+                })
+
+                it('should fail on blank id', () => {
+                    const id = ' \t    \n'
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined deviceName', () => {
+                    const deviceName = undefined
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on null deviceName', () => {
+                    const deviceName = null
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `deviceName is not optional`))
+                })
+
+                it('should fail on empty deviceName', () => {
+                    const deviceName = ''
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on blank deviceName', () => {
+                    const deviceName = ' \t    \n'
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'deviceName is empty'))
+                })
+
+                it('should fail on undefined outputType', () => {
+                    const outputType = undefined
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputType is not optional`))
+                })
+
+                it('should fail on null outputType', () => {
+                    const outputType = null
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputType is not optional`))
+                })
+
+                it('should fail on empty outputType', () => {
+                    const outputType = ''
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputType is empty'))
+                })
+
+                it('should fail on blank outputType', () => {
+                    const outputType = ' \t    \n'
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputType is empty'))
+                })
+
+                it('should fail on undefined outputDirection', () => {
+                    const outputDirection = undefined
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputDirection is not optional`))
+                })
+
+                it('should fail on null outputDirection', () => {
+                    const outputDirection = null
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(RequirementError, `outputDirection is not optional`))
+                })
+
+                it('should fail on empty outputDirection', () => {
+                    const outputDirection = ''
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputDirection is empty'))
+                })
+
+                it('should fail on blank outputDirection', () => {
+                    const outputDirection = ' \t    \n'
+
+                    expect(() => logic.deleteOutput(id, deviceName, outputType, outputDirection).to.throw(ValueError, 'outputDirection is empty'))
+                })
+            })
+        })
+
+        describe('retrieve WOTdevice', () => {
             beforeEach(async() =>{
                 email = `marcusontest-${Math.random()}@gmail.com`
                 deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
                 deviceIp = `192.168.${String(Math.floor(Math.random()*100))}.${String(Math.floor(Math.random()*255))}`
-                let inputType = ''
-                let inputDirection = 0
 
                 await Users.create({ name, surname, email, password, isAdmin })
+
                 user = await Users.findOne({email})
                 id = user.id
-                user.devices.push(new Devices({ name: deviceName, ip: deviceIp, port: devicePort}))
-                await user.save()
+
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
             })
 
-            it('should succed adding a new WOTdevice digital input', async()=>{
-                inputType = 'digital'
-                inputDirection = 1
-                const response = await logic.addInput(id, deviceName, inputType, inputDirection)
+            it('should succes retrieving a WOTdevice', async () => {
+                const response = await logic.retrieveDevice(id, deviceName)
 
-                expect(response).to.not.exist
-                const _user = await Users.findById(id)
+                expect(response).to.exist
+                expect(response).to.be.instanceOf(Object)
+                expect(response.name).to.equal(deviceName)
+                expect(response.ip).to.equal(deviceIp)
+                expect(response.port).to.equal(devicePort)
+                expect(response.inputs).to.exist
+                expect(response.outputs).to.exist
 
-                const { devices } = _user
+            })
 
-                expect(devices[0].name).to.equal(deviceName)
-                expect(devices[0].inputs).to.exist
-                expect(devices[0].inputs).to.be.instanceOf(Array)
-                expect(devices[0].inputs).to.have.length(1)
-                expect(devices[0].inputs.type).to.equal(inputType)
-                expect(devices[0].inputs.direction).to.equal(inputDirection)
-                expect(devices[0].inputs.value).to.be.undefined
+            it('should fail retrieving a unexisting WOTdevice', async () => {
+                deviceName = 'unexistingDevice'
+                try {
+                    await logic.retrieveDevice(id, deviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
 
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail retrieving a WOTdevice of a unexisting user', async () => {
+                let _id = 'unexistingId'
+                try {
+                    await logic.retrieveDevice(_id, deviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on undefined device id', () => {
+                const id = undefined
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.retrieveDevice(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
             })
         })
+
+        describe('activate WOTdevice', () => {
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+            })
+
+            it('should succed on activating the selected WOTdevice', async () => {
+                const response = await logic.activateDevice(id, deviceName, timeInterval)
+
+                expect(response).to.exist
+                expect(response.deviceid).to.equal('newWOTDevice')
+                expect(response.status).to.equal('ON')
+                expect(response.interval).to.equal(timeInterval.toString())
+            })
+
+            it('should fail on activating a WOTdevice from unexisting user', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await logic.activateDevice(_id, deviceName, timeInterval)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.activateDevice(id, deviceName, timeInterval)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on activating a WOTdevice witch time interval too low', async () => {
+                timeInterval = 10
+
+                try {
+                    await logic.activateDevice(id, deviceName, timeInterval)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`time interval ${timeInterval} is too low. must be at least 1000`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined timeInterval', () => {
+                const timeInterval = undefined
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(RequirementError, `timeInterval is not optional`))
+            })
+
+            it('should fail on null timeInterval', () => {
+                const timeInterval = null
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(RequirementError, `timeInterval is not optional`))
+            })
+
+            it('should fail on empty timeInterval', () => {
+                const timeInterval = ''
+
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(ValueError, `timeInterval is empty`))
+            })
+
+            it('should fail on blank timeInterval', () => {
+                const timeInterval = ' \t    \n'
+                expect(() => logic.activateDevice(id, deviceName, timeInterval).to.throw(ValueError, `timeInterval is empty`))
+            })
+        })
+
+        describe('change WOTdevice name', () => {
+            let newDeviceName = 'newWOTdeviceName'
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+            })
+
+            it('should succed changing a WOTdevice name', async () => {
+                const response = await logic.changeDeviceId(id, deviceName, newDeviceName)
+
+                expect(response).to.exist
+                expect(response.deviceid).to.equal(newDeviceName)
+                expect(response.status).to.equal('OK')
+
+                const users = await Users.find({ $and: [{ _id: id }, { 'devices.name': newDeviceName }] })
+                expect(users).to.have.lengthOf(1)
+                expect(users[0].devices).to.have.lengthOf(1)
+                expect(users[0].devices[0].name).to.equal(newDeviceName)
+
+                await logic.changeDeviceId(id, newDeviceName, 'newWOTDevice')
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.changeDeviceId(_id, deviceName, newDeviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.changeDeviceId(id, deviceName, newDeviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined newDeviceName', () => {
+                const newDeviceName = undefined
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(RequirementError, `newDeviceName is not optional`))
+            })
+
+            it('should fail on null newDeviceName', () => {
+                const newDeviceName = null
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(RequirementError, `newDeviceName is not optional`))
+            })
+
+            it('should fail on empty newDeviceName', () => {
+                const newDeviceName = ''
+
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(ValueError, `newDeviceName is empty`))
+            })
+
+            it('should fail on blank newDeviceName', () => {
+                const newDeviceName = ' \t    \n'
+                expect(() => logic.changeDeviceId(id, deviceName, newDeviceName).to.throw(ValueError, `newDeviceName is empty`))
+            })
+        })
+
+        describe('toggle WOTdevice digital output', () => {
+            let pinNumber = 1
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                let type = 'digital'
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addOutput(id, deviceName, type, pinNumber)
+            })
+
+            it('should succed toggling on and off a WOTdevice digital output', async () => {
+                const response = await logic.toggleDigitalOutput(id, deviceName, pinNumber)
+
+                expect(response).to.exist
+                expect(response.deviceid).to.equal(deviceName)
+                expect(response.status).to.equal('ON')
+
+                const response2 = await logic.toggleDigitalOutput(id, deviceName, pinNumber)
+
+                expect(response2).to.exist
+                expect(response2.deviceid).to.equal(deviceName)
+                expect(response2.status).to.equal('OFF')
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.toggleDigitalOutput(_id, deviceName, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.toggleDigitalOutput(id, deviceName, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined pinNumber', () => {
+                const pinNumber = undefined
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(RequirementError, `pinNumber is not optional`))
+            })
+
+            it('should fail on null pinNumber', () => {
+                const pinNumber = null
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(RequirementError, `pinNumber is not optional`))
+            })
+
+            it('should fail on empty pinNumber', () => {
+                const pinNumber = ''
+
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(ValueError, `pinNumber is empty`))
+            })
+
+            it('should fail on blank pinNumber', () => {
+                const pinNumber = ' \t    \n'
+                expect(() => logic.toggleDigitalOutput(id, deviceName, pinNumber).to.throw(ValueError, `pinNumber is empty`))
+            })
+        })
+
+        describe('moving a WOTdevice servo output', () => {
+            let pinNumber = 1
+            let angle = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                let type = 'servo'
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addOutput(id, deviceName, type, pinNumber)
+            })
+
+            it('should succed moving a WOTdevice servo output', async () => {
+                const response = await logic.setServoPosition(id, deviceName, pinNumber, angle)
+
+                expect(response).to.exist
+                expect(response.deviceid).to.equal(deviceName)
+                expect(response.status).to.equal(5)
+                angle = 120
+                const response2 = await logic.setServoPosition(id, deviceName, pinNumber, angle)
+
+                expect(response2).to.exist
+                expect(response2.deviceid).to.equal(deviceName)
+                expect(response2.status).to.equal(120)
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.setServoPosition(_id, deviceName, pinNumber, angle)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.setServoPosition(id, deviceName, pinNumber, angle)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined pinNumber', () => {
+                const pinNumber = undefined
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(RequirementError, `pinNumber is not optional`))
+            })
+
+            it('should fail on null pinNumber', () => {
+                const pinNumber = null
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(RequirementError, `pinNumber is not optional`))
+            })
+
+            it('should fail on empty pinNumber', () => {
+                const pinNumber = ''
+
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(ValueError, `pinNumber is empty`))
+            })
+
+            it('should fail on blank pinNumber', () => {
+                const pinNumber = ' \t    \n'
+                expect(() => logic.setServoPosition(id, deviceName, pinNumber, angle).to.throw(ValueError, `pinNumber is empty`))
+            })
+        })
+
+        describe('speeding a WOTdevice motor output', () => {
+            let pinNumber = 1
+            let speed = 100
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                let type = 'motor'
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addOutput(id, deviceName, type, pinNumber)
+            })
+
+            it('should succed moving a WOTdevice motor output', async () => {
+                const response = await logic.setMotorSpeed(id, deviceName, pinNumber, speed)
+
+                expect(response).to.exist
+                expect(response.deviceid).to.equal(deviceName)
+                expect(response.status).to.equal(100)
+                speed = 0
+                const response2 = await logic.setMotorSpeed(id, deviceName, pinNumber, speed)
+
+                expect(response2).to.exist
+                expect(response2.deviceid).to.equal(deviceName)
+                expect(response2.status).to.equal(0)
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.setMotorSpeed(_id, deviceName, pinNumber, speed)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.setMotorSpeed(id, deviceName, pinNumber, speed)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined pinNumber', () => {
+                const pinNumber = undefined
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `pinNumber is not optional`))
+            })
+
+            it('should fail on null pinNumber', () => {
+                const pinNumber = null
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `pinNumber is not optional`))
+            })
+
+            it('should fail on empty pinNumber', () => {
+                const pinNumber = ''
+
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, `pinNumber is empty`))
+            })
+
+            it('should fail on blank pinNumber', () => {
+                const pinNumber = ' \t    \n'
+                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, `pinNumber is empty`))
+            })
+        })
+
+        describe('saving a WOTdevice analog input', () => {
+            let type = 'analog'
+            let pinNumber = 1
+            let value = 0
+            let scaledValue = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = Math.floor(Math.random()*1024)
+
+                scaledValue = (value/10.23).toFixed(2)
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+            })
+
+            it('should succed saving a WOTdevice analog value', async () => {
+
+                const response = await logic.saveAnalogInput(id, deviceName, value)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(Number(scaledValue))
+                expect(input.values[0].date).to.be.instanceOf(Date)
+
+
+            })
+
+            it('should succed saving two WOTdevice analog value', async () => {
+                let _value = 250
+                await logic.saveAnalogInput(id, deviceName, value)
+                const response = await logic.saveAnalogInput(id, deviceName, _value)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values).to.have.lengthOf(2)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(Number(scaledValue))
+                expect(input.values[0].date).to.be.instanceOf(Date)
+                expect(input.values[1]).to.be.instanceOf(Object)
+                expect(input.values[1].date).to.be.instanceOf(Date)
+
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.saveAnalogInput(_id, deviceName, value)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.saveAnalogInput(id, deviceName, value)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, `value is empty`))
+            })
+        })
+
+        describe('saving a WOTdevice digital input', () => {
+            let type = 'digital'
+            let pinNumber = 1
+            let value = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = Math.floor(Math.random()*2)
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+            })
+
+            it('should succed saving a WOTdevice digital value', async () => {
+                const response = await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(value)
+                expect(input.values[0].date).to.be.instanceOf(Date)
+
+
+            })
+
+            it('should succed saving two WOTdevice digital value', async () => {
+                let _value = 0
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                const response = await logic.saveDigitalInput(id, deviceName, _value, pinNumber)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values).to.have.lengthOf(2)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(value)
+                expect(input.values[0].date).to.be.instanceOf(Date)
+                expect(input.values[1]).to.be.instanceOf(Object)
+                expect(input.values[1].date).to.be.instanceOf(Date)
+
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.saveDigitalInput(_id, deviceName, value, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+        })
+
+        describe('retrieving a WOTdevice analog input', () => {
+            let type = 'analog'
+            let pinNumber = 1
+            let value = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = Math.floor(Math.random()*1024)
+
+                scaledValue = (value/10.23).toFixed(2)
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+                await logic.saveAnalogInput(id, deviceName, value)
+                value = Math.floor(Math.random()*1024)
+                await logic.saveAnalogInput(id, deviceName, value)
+                value = Math.floor(Math.random()*1024)
+                await logic.saveAnalogInput(id, deviceName, value)
+            })
+
+            it('should succed retrieving a WOTdevice analog value', async () => {
+
+                const response = await logic.retrieveAnalog(id, deviceName)
+
+                expect(response).to.exist
+                expect(response).to.be.instanceOf(Array)
+                expect(response).to.have.lengthOf(3)
+                expect(response[0].value).to.exist
+                expect(response[0].date).to.exist
+                expect(response[0].date).to.be.instanceOf(Date)
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.retrieveAnalog(_id, deviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on retrieving a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.retrieveAnalog(id, deviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, `value is empty`))
+            })
+        })
+
+        describe('retrieving a WOTdevice digital input', () => {
+            let type = 'digital'
+            let pinNumber = 1
+            let value = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = 0
+                debugger
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                value = 1
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                value = 0
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+            })
+
+            it('should succed retrieving a WOTdevice digital value', async () => {
+
+                const response = await logic.retrieveDigital(id, deviceName, pinNumber)
+
+                expect(response).to.exist
+                expect(response).to.be.instanceOf(Array)
+                expect(response).to.have.lengthOf(3)
+                expect(response[0].value).to.exist
+                expect(response[0].date).to.exist
+                expect(response[0].date).to.be.instanceOf(Date)
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.retrieveDigital(_id, deviceName, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on retrieving a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.retrieveDigital(id, deviceName, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+        })
+
     })
-    after(() => {
+    after(async () => {
+        await logic.changeDeviceId(id, deviceName, 'newWOTDevice')
         mongoose.disconnect()
     })
 
