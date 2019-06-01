@@ -589,8 +589,6 @@ const logic = {
 
                 const device = users[0].devices.filter(({ name }) => name == deviceName)
 
-                debugger
-
                 const inputIndex = device[0].inputs.findIndex(({ type }) => (type == 'analog'))
 
                 if (inputIndex == -1) throw new LogicError(`no analog input declared in the WOTdevice ${deviceName}`)
@@ -611,12 +609,103 @@ const logic = {
         })()
     },
 
-    retrieveAnalog(id, deviceId){
+    saveDigitalInput(id, deviceName, value, pinNumber){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'value', value: value, type: 'number', notEmpty: true },
+            { name: 'pinNumber', value: pinNumber, type: 'number', notEmpty: true }
+        ])
 
+            if(pinNumber<1 || pinNumber>2) throw new LogicError(`${direction} is not a valid direction for a digital input`)
+        return (async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({ name }) => name == deviceName)
+
+                const inputIndex = device[0].inputs.findIndex(({ type, direction }) => (type == 'digital') && (direction == pinNumber))
+
+                if (inputIndex == -1) throw new LogicError(`no digital input declared in the WOTdevice ${deviceName}`)
+
+                const deviceIndex = user.devices.findIndex(({ name }) => name == deviceName)
+
+                if(user.devices[deviceIndex].inputs[inputIndex].values.length >= 10) user.devices[deviceIndex].inputs[inputIndex].values.shift()
+
+                user.devices[deviceIndex].inputs[inputIndex].values.push({value, date: Date.now()})
+
+                await Users.findByIdAndUpdate(id, user)
+
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     },
 
-    retrieveDigital(id, deviceId){
+    retrieveAnalog(id, deviceName){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true }
+        ])
 
+        return (async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({ name }) => name == deviceName)
+
+                const inputIndex = device[0].inputs.findIndex(({ type }) => (type == 'analog'))
+
+                if (inputIndex == -1) throw new LogicError(`no analog input declared in the WOTdevice ${deviceName}`)
+
+                const deviceIndex = user.devices.findIndex(({ name }) => name == deviceName)
+
+                return user.devices[deviceIndex].inputs[inputIndex].values
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
+    },
+
+    retrieveDigital(id, deviceName, pinNumber){
+        validate.arguments([
+            { name: 'id', value: id, type: 'string', notEmpty: true },
+            { name: 'deviceName', value: deviceName, type: 'string', notEmpty: true },
+            { name: 'pinNumber', value: pinNumber, type: 'number', notEmpty: true }
+        ])
+
+        return (async () => {
+
+            try {
+                const user = await Users.findById(id)
+                if (!user) throw new LogicError(`user with id: ${id} does not exist`)
+
+                let users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                if (users.length == 0) throw new LogicError(`A device named ${deviceName} does not exist in your collection`)
+
+                const device = users[0].devices.filter(({ name }) => name == deviceName)
+
+                const inputIndex = device[0].inputs.findIndex(({ type, direction }) => (type == 'digital') && (direction == pinNumber))
+
+                if (inputIndex == -1) throw new LogicError(`no digital input declared in the WOTdevice ${deviceName}`)
+
+                const deviceIndex = user.devices.findIndex(({ name }) => name == deviceName)
+
+                return user.devices[deviceIndex].inputs[inputIndex].values
+            } catch (error) {
+                throw new LogicError(error.message)
+            }
+        })()
     }
 
 }

@@ -2706,6 +2706,7 @@ describe('logic', () => {
             })
 
             it('should succed saving a WOTdevice analog value', async () => {
+
                 const response = await logic.saveAnalogInput(id, deviceName, value)
 
                 expect(response).to.not.exist
@@ -2723,11 +2724,33 @@ describe('logic', () => {
 
             })
 
+            it('should succed saving two WOTdevice analog value', async () => {
+                let _value = 250
+                await logic.saveAnalogInput(id, deviceName, value)
+                const response = await logic.saveAnalogInput(id, deviceName, _value)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values).to.have.lengthOf(2)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(Number(scaledValue))
+                expect(input.values[0].date).to.be.instanceOf(Date)
+                expect(input.values[1]).to.be.instanceOf(Object)
+                expect(input.values[1].date).to.be.instanceOf(Date)
+
+            })
+
             it('should fail on unexisting user id', async () => {
                 let _id = 'unexistingId'
 
                 try {
-                    await await logic.setMotorSpeed(_id, deviceName, pinNumber, speed)
+                    await await logic.saveAnalogInput(_id, deviceName, value)
                     throw Error('should not reach this point')
                 } catch (error) {
                     expect(error).to.exist
@@ -2741,7 +2764,7 @@ describe('logic', () => {
                 deviceName = 'undefinedWOTdevice'
 
                 try {
-                    await logic.setMotorSpeed(id, deviceName, pinNumber, speed)
+                    await logic.saveAnalogInput(id, deviceName, value)
                     throw Error('should not reach this point')
                 } catch (error) {
                     expect(error).to.exist
@@ -2754,70 +2777,486 @@ describe('logic', () => {
             it('should fail on null id', () => {
                 const id = null
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `id is not optional`))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `id is not optional`))
             })
 
             it('should fail on empty id', () => {
                 const id = ''
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'id is empty'))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'id is empty'))
             })
 
             it('should fail on blank id', () => {
                 const id = ' \t    \n'
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'deviceName is empty'))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'deviceName is empty'))
             })
 
             it('should fail on undefined deviceName', () => {
                 const deviceName = undefined
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `deviceName is not optional`))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `deviceName is not optional`))
             })
 
             it('should fail on null deviceName', () => {
                 const deviceName = null
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `deviceName is not optional`))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `deviceName is not optional`))
             })
 
             it('should fail on empty deviceName', () => {
                 const deviceName = ''
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'deviceName is empty'))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'deviceName is empty'))
             })
 
             it('should fail on blank deviceName', () => {
                 const deviceName = ' \t    \n'
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, 'deviceName is empty'))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, 'deviceName is empty'))
             })
 
-            it('should fail on undefined pinNumber', () => {
-                const pinNumber = undefined
+            it('should fail on undefined value', () => {
+                const value = undefined
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `pinNumber is not optional`))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `value is not optional`))
             })
 
-            it('should fail on null pinNumber', () => {
-                const pinNumber = null
+            it('should fail on null value', () => {
+                const value = null
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(RequirementError, `pinNumber is not optional`))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(RequirementError, `value is not optional`))
             })
 
-            it('should fail on empty pinNumber', () => {
-                const pinNumber = ''
+            it('should fail on empty value', () => {
+                const value = ''
 
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, `pinNumber is empty`))
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, `value is empty`))
             })
 
-            it('should fail on blank pinNumber', () => {
-                const pinNumber = ' \t    \n'
-                expect(() => logic.setMotorSpeed(id, deviceName, pinNumber, speed).to.throw(ValueError, `pinNumber is empty`))
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.saveAnalogInput(id, deviceName, value).to.throw(ValueError, `value is empty`))
+            })
+        })
+
+        describe('saving a WOTdevice digital input', () => {
+            let type = 'digital'
+            let pinNumber = 1
+            let value = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = Math.floor(Math.random()*2)
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+            })
+
+            it('should succed saving a WOTdevice digital value', async () => {
+                const response = await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(value)
+                expect(input.values[0].date).to.be.instanceOf(Date)
+
+
+            })
+
+            it('should succed saving two WOTdevice digital value', async () => {
+                let _value = 0
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                const response = await logic.saveDigitalInput(id, deviceName, _value, pinNumber)
+
+                expect(response).to.not.exist
+                users = await Users.find({ $and: [{ _id: id }, { 'devices.name': deviceName }] })
+                const deviceIndex = users[0].devices.findIndex(({ name }) => name == deviceName)
+                const input = users[0].devices[deviceIndex].inputs[0]
+                expect(input).to.exist
+                expect(input.type).to.equal(type)
+                expect(input.direction).to.equal(pinNumber)
+                expect(input.values).to.be.instanceOf(Array)
+                expect(input.values).to.have.lengthOf(2)
+                expect(input.values[0]).to.be.instanceOf(Object)
+                expect(input.values[0].value).to.equal(value)
+                expect(input.values[0].date).to.be.instanceOf(Date)
+                expect(input.values[1]).to.be.instanceOf(Object)
+                expect(input.values[1].date).to.be.instanceOf(Date)
+
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.saveDigitalInput(_id, deviceName, value, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on activating a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.saveDigitalInput(id, deviceName, value, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+        })
+
+        describe('retrieving a WOTdevice analog input', () => {
+            let type = 'analog'
+            let pinNumber = 1
+            let value = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = Math.floor(Math.random()*1024)
+
+                scaledValue = (value/10.23).toFixed(2)
+
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+                await logic.saveAnalogInput(id, deviceName, value)
+                value = Math.floor(Math.random()*1024)
+                await logic.saveAnalogInput(id, deviceName, value)
+                value = Math.floor(Math.random()*1024)
+                await logic.saveAnalogInput(id, deviceName, value)
+            })
+
+            it('should succed retrieving a WOTdevice analog value', async () => {
+
+                const response = await logic.retrieveAnalog(id, deviceName)
+
+                expect(response).to.exist
+                expect(response).to.be.instanceOf(Array)
+                expect(response).to.have.lengthOf(3)
+                expect(response[0].value).to.exist
+                expect(response[0].date).to.exist
+                expect(response[0].date).to.be.instanceOf(Date)
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.retrieveAnalog(_id, deviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on retrieving a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.retrieveAnalog(id, deviceName)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.retrieveAnalog(id, deviceName).to.throw(ValueError, `value is empty`))
+            })
+        })
+
+        describe('retrieving a WOTdevice digital input', () => {
+            let type = 'digital'
+            let pinNumber = 1
+            let value = 0
+
+            beforeEach(async() =>{
+                email = `marcusontest-${Math.random()}@gmail.com`
+                deviceName = `WOTdevice${Math.floor(Math.random()*999)}`
+                deviceIp = `192.168.1.198`
+                value = 0
+                debugger
+                await Users.create({ name, surname, email, password, isAdmin })
+
+                user = await Users.findOne({email})
+                id = user.id
+                await logic.addDevice(id, deviceName, deviceIp, devicePort)
+                await logic.changeDeviceId(id, deviceName, deviceName)
+                await logic.addInput(id, deviceName, type, pinNumber)
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                value = 1
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+                value = 0
+                await logic.saveDigitalInput(id, deviceName, value, pinNumber)
+            })
+
+            it('should succed retrieving a WOTdevice digital value', async () => {
+
+                const response = await logic.retrieveDigital(id, deviceName, pinNumber)
+
+                expect(response).to.exist
+                expect(response).to.be.instanceOf(Array)
+                expect(response).to.have.lengthOf(3)
+                expect(response[0].value).to.exist
+                expect(response[0].date).to.exist
+                expect(response[0].date).to.be.instanceOf(Date)
+            })
+
+            it('should fail on unexisting user id', async () => {
+                let _id = 'unexistingId'
+
+                try {
+                    await await logic.retrieveDigital(_id, deviceName, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`user with id: ${_id} does not exist`)
+                }
+            })
+
+            it('should fail on retrieving a undefined WOTdevice', async () => {
+                deviceName = 'undefinedWOTdevice'
+
+                try {
+                    await logic.retrieveDigital(id, deviceName, pinNumber)
+                    throw Error('should not reach this point')
+                } catch (error) {
+                    expect(error).to.exist
+                    expect(error).to.be.an.instanceOf(LogicError)
+
+                    expect(error.message).to.equal(`A device named ${deviceName} does not exist in your collection`)
+                }
+            })
+
+            it('should fail on null id', () => {
+                const id = null
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `id is not optional`))
+            })
+
+            it('should fail on empty id', () => {
+                const id = ''
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'id is empty'))
+            })
+
+            it('should fail on blank id', () => {
+                const id = ' \t    \n'
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined deviceName', () => {
+                const deviceName = undefined
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on null deviceName', () => {
+                const deviceName = null
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `deviceName is not optional`))
+            })
+
+            it('should fail on empty deviceName', () => {
+                const deviceName = ''
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on blank deviceName', () => {
+                const deviceName = ' \t    \n'
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, 'deviceName is empty'))
+            })
+
+            it('should fail on undefined value', () => {
+                const value = undefined
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on null value', () => {
+                const value = null
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(RequirementError, `value is not optional`))
+            })
+
+            it('should fail on empty value', () => {
+                const value = ''
+
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, `value is empty`))
+            })
+
+            it('should fail on blank value', () => {
+                const value = ' \t    \n'
+                expect(() => logic.retrieveDigital(id, deviceName, pinNumber).to.throw(ValueError, `value is empty`))
             })
         })
 
     })
-    after(() => {
+    after(async () => {
+        await logic.changeDeviceId(id, deviceName, 'newWOTDevice')
         mongoose.disconnect()
     })
 

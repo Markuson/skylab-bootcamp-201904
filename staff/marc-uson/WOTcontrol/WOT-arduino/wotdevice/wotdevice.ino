@@ -108,7 +108,9 @@ void httpSend(String query, String body)
 {
    HTTPClient http;
    //Skylab
-   http.begin("http://192.168.0.31:8080/api/wotcontrol/" + query);
+   // http.begin("http://192.168.0.31:8080/api/wotcontrol/" + query);
+   //Lleida
+   http.begin("http://192.168.1.202:8080/api/wotcontrol/" + query);
 
    http.addHeader("Content-Type", "application/json");
    int httpCode = http.POST(body);
