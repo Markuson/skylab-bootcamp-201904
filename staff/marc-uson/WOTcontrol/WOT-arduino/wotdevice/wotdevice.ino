@@ -4,8 +4,10 @@
 #include <elapsedMillis.h>
 #include <Servo.h>
 
-const char* ssid ="skylabCodersAcademy";
-const char* password = "skylabRocks";
+// const char* ssid ="skylabCodersAcademy";     //SKYLAB
+// const char* password = "skylabRocks";        //SKYLAB
+const char* ssid ="bivid_307C";              //Lleida
+const char* password = "71AF092F875E";       //Lleida
 String id = "newWOTDevice";
 
 const int DOut1 = 16; //GPIO16 - D0

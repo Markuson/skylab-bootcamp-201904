@@ -6,7 +6,7 @@
     "start": "node .",
     "watch": "nodemon .",
     "debug": "node debug .",
-    "test": "npx mocha --timeout 15000",
+    "test": "npx mocha --timeout 40000",
     "test:debug": "npx mocha debug ",
     "test:coverage": "nyc --reporter=html --reporter=text mocha ./**/*.test.js"
   },

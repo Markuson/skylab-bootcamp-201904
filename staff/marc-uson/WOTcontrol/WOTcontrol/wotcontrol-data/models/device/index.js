@@ -8,15 +8,14 @@ const inputSchema = new Schema({
         enum:['digital', 'analog'],
         required: true
     },
-    value: {
+    direction: {
         type: Number,
-        default:0
+        default:1
     },
-    direction:{
-        type: Number,
-        enum: [1,2],
-        required: true
-    }
+    values: [{
+        value: {type: Number},
+        date: {type: Date}
+    }]
 })
 
 const outputSchema = new Schema({
