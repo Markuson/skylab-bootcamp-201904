@@ -4,10 +4,8 @@
 #include <elapsedMillis.h>
 #include <Servo.h>
 
-// const char* ssid ="skylabCodersAcademy";     //SKYLAB
-// const char* password = "skylabRocks";        //SKYLAB
-const char* ssid ="bivid_307C";              //Lleida
-const char* password = "71AF092F875E";       //Lleida
+const char* ssid ="skylabCodersAcademy";
+const char* password = "skylabRocks";
 String id = "newWOTDevice";
 
 const int DOut1 = 16; //GPIO16 - D0
@@ -108,9 +106,7 @@ void httpSend(String query, String body)
 {
    HTTPClient http;
    //Skylab
-   // http.begin("http://192.168.0.31:8080/api/wotcontrol/" + query);
-   //Lleida
-   http.begin("http://192.168.1.202:8080/api/wotcontrol/" + query);
+   http.begin("http://192.168.0.31:8080/api/wotcontrol/" + query);
 
    http.addHeader("Content-Type", "application/json");
    int httpCode = http.POST(body);
@@ -175,11 +171,11 @@ void DOut_on(){
    {
    case 1:
       digitalWrite(DOut1, HIGH);
-      server.send(200, "application/json", "{\"deviceid\":\"" + id + "\",\"status\":\"ON\"}");
+      server.send(200, "application/json", "{\"deviceid\":\"" + id + "\",\"DOut1\":\"ON\"}");
       break;
    case 2:
       digitalWrite(DOut2, HIGH);
-      server.send(200, "application/json", "{\"deviceid\":\"" + id + "\",\"status\":\"ON\"}");
+      server.send(200, "application/json", "{\"deviceid\":\"" + id + "\",\"DOut2\":\"ON\"}");
       break;
    default:
       server.send(400, "application/json", "{\"deviceid\":\"" + id + "\",\"error\":\"BAD DOUT REQUEST\"}");
@@ -193,11 +189,11 @@ void DOut_off(){
    {
    case 1:
       digitalWrite(DOut1, LOW);
-      server.send(200, "text/plain", "{\"deviceid\":\"" + id + "\",\"status\":\"OFF\"}");
+      server.send(200, "text/plain", "{\"deviceid\":\"" + id + "\",\"DOut1\":\"OFF\"}");
       break;
    case 2:
       digitalWrite(DOut2, LOW);
-      server.send(200, "text/plain", "{\"deviceid\":\"" + id + "\",\"status\":\"OFF\"}");
+      server.send(200, "text/plain", "{\"deviceid\":\"" + id + "\",\"DOut2\":\"OFF\"}");
       break;
    default:
       server.send(400, "text/plain", "{\"deviceid\":\"" + id + "\",\"error\":\"BAD DOUT REQUEST\"}");
@@ -218,7 +214,7 @@ void handleServo1(){
   Serial.print("Servo1 Angle:");
   Serial.println(pos);
   String position = String(pos);
-  server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"status\":\"" + position + "\"}");
+  server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"servo1\":\"" + position + "\"}");
 }
 
 void handleServo2(){
@@ -235,7 +231,7 @@ void handleServo2(){
   Serial.print("Servo2 Angle:");
   Serial.println(pos);
   String position = String(pos);
-  server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"status\":\"" + position + "\"}");
+  server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"servo2\":\"" + position + "\"}");
 }
 
 void handleServo3(){
@@ -253,7 +249,7 @@ void handleServo3(){
   Serial.print("Servo3 Angle:");
   Serial.println(pos);
   String position = String(pos);
-  server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"status\":\"" + position + "\"}");
+  server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"servo3\":\"" + position + "\"}");
 }
 
 void handleMotor1()
@@ -271,7 +267,7 @@ void handleMotor1()
    }
    analogWrite(motor1, vel); // PWM to motor1 (from 0 to 255)
    String velocity = String(vel);
-   server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"status\":\"" + velocity + "\"}");
+   server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"motor1\":\"" + velocity + "\"}");
 }
 
 void handleMotor2()
@@ -289,7 +285,7 @@ void handleMotor2()
    }
    analogWrite(motor2, vel); // PWM to motor2 (from 0 to 255)
    String velocity = String(vel);
-   server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"status\":\"" + velocity + "\"}");
+   server.send(200, "application/json","{\"deviceid\":\"" + id + "\",\"motor2\":\"" + velocity + "\"}");
 }
 
 String Analog_state(){
